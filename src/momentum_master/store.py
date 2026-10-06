@@ -161,6 +161,40 @@ class Store:
                 self._db.execute("ROLLBACK")
                 raise
 
+    def record_deletion(
+        self, msg_id: int, decision: Decision, *, deleted_at_utc: datetime, mode: str
+    ) -> None:
+        """Registra la cancellazione di un messaggio dal canale e la decisione presa."""
+        when = _iso(deleted_at_utc)
+        d = decision
+        with self._lock:
+            self._db.execute("BEGIN IMMEDIATE")
+            try:
+                cur = self._db.execute(
+                    "INSERT OR IGNORE INTO messages (msg_id, event, edit_date_utc, date_utc, "
+                    "received_at_utc, raw_text, mode) VALUES (?, 'delete', ?, ?, ?, '', ?)",
+                    (msg_id, when, when, when, mode),
+                )
+                if cur.rowcount:
+                    self._db.execute(
+                        "INSERT INTO decisions (message_row, msg_id, action, reason, details, "
+                        "decided_at_utc, config_version, target_msg_id) VALUES (?,?,?,?,?,?,?,?)",
+                        (cur.lastrowid, msg_id, d.action.value, d.reason.value, d.details,
+                         _iso(d.decided_at_utc), d.config_version, d.target_msg_id),
+                    )  # fmt: skip
+                self._db.execute("COMMIT")
+            except Exception:
+                self._db.execute("ROLLBACK")
+                raise
+
+    def last_msg_id(self) -> int:
+        """Ultimo msg_id registrato (per recuperare gli arretrati all'avvio)."""
+        with self._lock:
+            row = self._db.execute(
+                "SELECT MAX(msg_id) FROM messages WHERE event = 'new'"
+            ).fetchone()
+        return int(row[0] or 0)
+
     # --- lettura -----------------------------------------------------------------------
 
     def engine_state(self, now_utc: datetime, dedup_window_s: int) -> EngineState:

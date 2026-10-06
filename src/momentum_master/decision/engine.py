@@ -91,10 +91,20 @@ class MarketSnapshot:
     # None = sconosciuti → per sicurezza nessun nuovo ordine.
     minutes_to_week_close: int | None
     minutes_since_week_open: int | None
+    available: bool = True  # False = nessuna fonte di prezzi (PAPER senza MT5)
 
     @property
     def spread(self) -> Decimal:
         return self.ask - self.bid
+
+    @classmethod
+    def unavailable(cls, server_time: datetime) -> MarketSnapshot:
+        """Mercato sconosciuto: nessuna apertura possibile (S7), il resto si registra."""
+        return cls(
+            bid=Decimal("0"), ask=Decimal("0"), server_time=server_time, trade_allowed=False,
+            stops_level=Decimal("0"), minutes_to_week_close=None, minutes_since_week_open=None,
+            available=False,
+        )  # fmt: skip
 
 
 @dataclass(frozen=True)
@@ -218,6 +228,8 @@ def _s1_complete(c: _Ctx) -> Check:
 
 
 def _s7_market(c: _Ctx) -> Check:
+    if not c.market.available:
+        return Reason.S7, "prezzo non disponibile (nessuna fonte di mercato collegata)"
     if not c.market.trade_allowed:
         return Reason.S7, "mercato chiuso o simbolo non negoziabile"
     return None
@@ -431,9 +443,9 @@ def decide(
         "msg_id": msg.msg_id,
         "decided_at_utc": mctx.received_at_utc.astimezone(UTC),
         "config_version": cfg.meta.version,
-        "bid": market.bid,
-        "ask": market.ask,
-        "spread": market.spread,
+        "bid": market.bid if market.available else None,
+        "ask": market.ask if market.available else None,
+        "spread": market.spread if market.available else None,
     }
 
     if msg.category is not Category.NEW_SIGNAL_COMPLETE:
@@ -525,3 +537,23 @@ def _decide_non_opening(
                    target)  # fmt: skip
     why = f"TP{msg.tp_hit} annunciato: SL a pareggio sul segnale {target}"
     return out(Action.MODIFY, Reason.OK, why, target)
+
+
+def decide_deletion(
+    msg_id: int, link: SignalLink | None, deleted_at_utc: datetime, config_version: str
+) -> Decision:
+    """Messaggio cancellato dal canale (master prompt, <trade_manager>):
+    pendente → si cancella; posizione aperta → nessuna azione automatica, notifica admin."""
+    base = {"msg_id": msg_id, "decided_at_utc": deleted_at_utc.astimezone(UTC),
+            "config_version": config_version}  # fmt: skip
+    if link is None:
+        why = "messaggio cancellato: nessun segnale aperto collegato"
+        return Decision(**base, action=Action.IGNORE, reason=Reason.NOT_A_SIGNAL, details=why)
+    if link.order_type == "LIMIT":
+        return Decision(**base, action=Action.CANCEL, reason=Reason.OK,
+                        details=f"segnale {link.signal_msg_id} cancellato dal canale: "
+                        "si cancella il pendente", target_msg_id=link.signal_msg_id)  # fmt: skip
+    return Decision(**base, action=Action.IGNORE, reason=Reason.AMBIGUOUS,
+                    details=f"segnale {link.signal_msg_id} cancellato dal canale con posizione "
+                    "aperta: nessuna azione automatica, notifica admin",
+                    target_msg_id=link.signal_msg_id)  # fmt: skip
