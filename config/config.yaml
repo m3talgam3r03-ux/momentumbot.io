@@ -1,0 +1,105 @@
+# ============================================================================
+# MOMENTUM MASTER — configurazione
+# ----------------------------------------------------------------------------
+# - Ogni modifica = nuova versione in "meta" (versione + data + nota). Git tiene lo storico.
+# - NESSUN SEGRETO qui (api_id, api_hash, login, password, token): vanno solo nel file .env
+# - Prezzi e distanze in PUNTI di prezzo (1 punto = 1,00 sull'oro). Mai in pips.
+# - Orari SEMPRE tra virgolette: "23:50". Senza virgolette YAML li legge come numeri.
+# - Controllo: python -m momentum_master.config config/config.yaml
+# ============================================================================
+
+meta:
+  version: "0.1.0"
+  date: 2026-10-06
+  note: "Prima versione. Valori PROVVISORI per la PAPER, da confermare dopo il replay."
+
+# paper = classifica e decide, NON invia ordini | demo = conto demo | live = conto reale
+# demo e live vengono RIFIUTATI finché filters.confirmed è false e mancano i dati FPG.
+mode: paper
+
+telegram:
+  group_id: null              # id del gruppo WDT MOMENTUM (dall'export)
+  # D1 (gruppo): solo questi mittenti possono generare segnali.
+  # null = nessun filtro, ammesso SOLO in paper finché non leggiamo l'id dall'export.
+  channel_poster_ids: null
+  admin_ids: []               # user_id Telegram autorizzati ai comandi admin
+  admin_chat_id: null         # chat/canale admin per notifiche, REJECT e AMBIGUOUS
+  followers_group_id: null    # gruppo follower per le notifiche sobrie
+
+mt5:
+  terminal_path: null         # es. "C:\\Program Files\\FPG MetaTrader 5\\terminal64.exe"
+  server: null                # nome del server FPG (dal terminale)
+  symbol: null                # nome ESATTO dell'oro sul conto (domanda 8 a FPG)
+  magic: 20261006             # identifica gli ordini del bot
+  deviation_points: 20        # slittamento massimo, in "point" MT5 del broker
+  server_utc_offset_hours: null  # null = misurato all'avvio dall'ultimo tick
+
+# Regole di sicurezza S1-S11: SEMPRE attive. Qui solo le soglie.
+safety:
+  max_entry_deviation: 15     # S3: entrata a oltre 15,00 dal prezzo → errore di battitura
+  stops_safety_margin: 0.50   # S4: margine oltre trade_stops_level
+  max_signal_age_s: 30        # S5: segnale più vecchio di 30 s → scartato
+  rollover_window:            # S9: niente nuovi ordini (ora del SERVER MT5)
+    start: "23:50"
+    end: "00:15"
+  friday_close_block_min: 30  # S9: ultimi 30 min prima della chiusura del venerdì
+  week_open_block_min: 30     # S9: primi 30 min dopo l'apertura settimanale
+  spread_emergency: 1.50      # S10: spread oltre 1,50 → nessun ordine, sempre
+  dedup_window_s: 600         # S11: WDT pubblica ogni range DUE volte → 10 min
+
+# Filtri di Lorenzo F1-F13. confirmed: false → il bot resta in PAPER.
+filters:
+  confirmed: false
+  confirmed_on: null
+  order_type_mode: both       # F1: market_only | pending_only | both (rivedere dopo FPG)
+  direction: both             # F2
+  sl_distance_min: null       # F3: nessun limite per ora
+  sl_distance_max: null       # F3
+  # F4 (R:R minimo): NON usato, decisione del 2026-10-06
+  range_entry_tolerance: 0    # F5 / D2: fuori dal range → scarto
+  max_wait_completion_min: 0  # F7: WDT pubblica segnali già completi
+  max_spread: 0.50            # F8: IPOTESI, da tarare sui tick reali di FPG
+  trading_hours_rome: null    # F9: null = sempre (salvo S9)
+  news_blackout_min: null     # F10: disattivo, fonte delle news da definire
+  max_trades_per_day: 10      # F11
+  max_open_positions: 2       # F11
+  exclude_keywords: []        # F12
+
+# D5: TP1 per tutti, niente BE. Funzioni pronte ma spente.
+targets:
+  tp_index: 1                 # 1..5, modificabile solo dall'admin
+  on_missing_tp: reject       # reject | use_last_available
+  be_after_tp: null           # null = BE mai applicato
+  be_offset: 0
+
+# Pendenti F-LIMIT. D3: 90 min PROPOSTI, in attesa di conferma di Lorenzo.
+pending:
+  expiry_min: 90              # scadenza impostata SUL BROKER (vale anche se il bot si blocca)
+  cancel_before_rollover: true
+  allow_over_weekend: false
+  heads_up_policy: notify_only  # D4: HEADS UP → solo notifica, cancellazione manuale
+
+sizing:
+  lot_mode: fixed             # fixed | risk_pct
+  master_lot: 0.01            # PROVVISORIO: da decidere prima della DEMO
+  risk_pct: null
+  max_lot: 1.00
+  max_risk_pct: 2
+
+trade_manager:
+  close_partial_enabled: false  # finché FPG non conferma la replica delle parziali
+  reconcile_interval_min: 5
+
+kill_switch:
+  daily_loss_pct: 3
+  max_consecutive_losses: 4
+  executor_errors_max: 3
+  executor_errors_window_min: 10
+  disconnect_max_s: 30
+  channel_silence_max_h: 24
+  ambiguous_spike_per_hour: 5
+
+notifications:
+  heartbeat_min: 15
+  daily_report_rome: "23:00"
+  language: it
