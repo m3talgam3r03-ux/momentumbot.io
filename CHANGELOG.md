@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.6.1] - 2026-10-06
+### Corretto (sicurezza della lettura)
+- Il classificatore accettava letture errate: range abbreviato o con refuso (es. "4138.96 - 39.96"), SL/TP/entrata con una cifra persa o in più, cifre non ASCII, intestazione con due direzioni, prezzi a 3 decimali, zeri iniziali. Ora sono tutti AMBIGUOUS.
+- Nuovi limiti di plausibilità: range ≤ 3,00; SL e TP entro 30,00 dall'entrata; livelli dalla parte giusta; ogni riga di livello letta per intero.
+### Test
+- 20 casi d'attacco, mutazioni mirate su ogni prezzo dei 12 messaggi reali, fuzzing con controllo di lettura letterale.
+### Impatto sui follower
+Nessuno oggi. Quando il bot sarà attivo: un segnale con un refuso nei prezzi non verrà mai eseguito; verrà segnalato all'admin come AMBIGUOUS.
+
 ## [0.6.0] - 2026-10-06
 ### Aggiunto
 - `decision/engine.py`: motore decisionale puro (S1-S11 + filtri F), un test per ogni reason_code.

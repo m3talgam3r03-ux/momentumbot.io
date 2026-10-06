@@ -74,6 +74,16 @@ Osservazioni:
 - Il ciclo di vita del pendente è comunicato in risposta: `LIMIT ORDER FILLED` (eseguito) oppure `LIMIT ORDER CANCELLED` (annullato, "this one timed out"). **La scadenza del pendente non è scritta nel segnale** (D3).
 - "approve it on the ATE within 10 minutes": ATE sembra uno strumento di copia del fornitore. Il significato dei "10 minuti" va chiarito (D3).
 
+## Controlli di plausibilità della lettura (2026-10-06)
+Un messaggio di apertura viene accettato solo se:
+- ogni prezzo è un numero ASCII positivo, senza zero iniziale e con al massimo 2 decimali;
+- il range (F-RANGE) è largo più di 0 e al massimo **3,00** (osservato: sempre 1,00);
+- SL e tutti i TP sono entro **30,00** dal centro dell'entrata (osservato: SL ≤ 8,50, TP4 ≤ 16,50);
+- SL e TP sono dalla parte giusta per la direzione;
+- l'intestazione contiene una sola direzione e un solo simbolo;
+- ogni riga che inizia con ENTRY/SL/TP e contiene ":" è letta per intero.
+Altrimenti → AMBIGUOUS con il motivo. Se il canale cambia le sue distanze abituali, i limiti vanno rivisti qui e in `classifier/opening.py`.
+
 ## Unità: pips e prezzo di riferimento
 
 | Verifica | Calcolo | Esito |

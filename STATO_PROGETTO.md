@@ -22,7 +22,7 @@
 - Motore decisionale (`decision/engine.py`): S1-S11 + filtri F in ordine, un test per ogni reason_code. Pendenti con scadenza sul broker, ridotta prima del rollover.
 - Registro SQLite (`store.py`) + `pipeline.py` + comando "spiega" (`python -m momentum_master.store`): ogni decisione ricostruibile.
 - S11 corretto in fase di sviluppo: il doppione si confronta con qualsiasi segnale già visto, anche scartato (altrimenti la seconda copia di un segnale scartato poteva essere aperta).
-- 214 test superati; ruff senza errori.
+- **Revisione avversaria del classificatore** (richiesta di Lorenzo): trovate e chiuse 7 letture errate accettate, di cui 2 gravi (range abbreviato "4138.96 - 39.96" letto come range di 4.099 punti; SL con una cifra persa "415.15" accettato su un BUY). Aggiunti controlli di plausibilità, cifre solo ASCII, niente zeri iniziali. Test: 20 casi d'attacco, oltre 800 mutazioni mirate su ogni prezzo, fuzzing.
 - Verificato: l'integrazione Telegram di Composio è un bot (Bot API) e non può leggere lo storico di WDT. L'export si fa solo con la sessione utente (Telethon).
 
 ### Decisioni prese

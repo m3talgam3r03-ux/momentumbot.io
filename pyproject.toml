@@ -1,6 +1,6 @@
 [project]
 name = "momentum-master"
-version = "0.6.0"
+version = "0.6.1"
 description = "MOMENTUM MASTER: classificazione ed esecuzione dei segnali WDT MOMENTUM su un conto master FPG (MT5)."
 requires-python = ">=3.11"
 
