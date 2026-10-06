@@ -5,6 +5,14 @@ Tutto il resto finisce in AMBIGUOUS con il motivo, NON in NOISE: finché un form
 catalogato non sappiamo se è rumore o un aggiornamento (es. una chiusura).
 Le categorie di aggiornamento/chiusura verranno aggiunte dopo l'export dello storico.
 
+Mittente (decisione di Lorenzo, 2026-10-06, D1): WDT MOMENTUM è un GRUPPO, quindi
+chiunque vi scriva può produrre un testo con la forma di un segnale. Con
+``authorized_sender_ids`` vengono considerati solo i messaggi degli account autorizzati
+(config: ``telegram.channel_poster_ids``). Se un amministratore pubblica in modo anonimo
+come il gruppo, il suo ``sender_id`` è l'id del gruppo stesso: in quel caso va autorizzato
+anche quello. Gli id reali si leggono dall'export (campo ``sender_id``).
+``None`` = nessun filtro (solo per l'analisi dello storico, mai in esercizio).
+
 Funzione pura: nessun I/O, stesso input → stesso output.
 """
 
@@ -16,7 +24,9 @@ from momentum_master.classifier.opening import parse_opening
 from momentum_master.exporter.models import ExportedMessage
 
 
-def classify(msg: ExportedMessage) -> ClassifiedMessage:
+def classify(
+    msg: ExportedMessage, authorized_sender_ids: frozenset[int] | None = None
+) -> ClassifiedMessage:
     base = {
         "msg_id": msg.msg_id,
         "date_utc": msg.date_utc,
@@ -25,6 +35,13 @@ def classify(msg: ExportedMessage) -> ClassifiedMessage:
         "method": Method.REGEX,
     }
 
+    if authorized_sender_ids is not None and msg.sender_id not in authorized_sender_ids:
+        return ClassifiedMessage(
+            **base,
+            category=Category.NOISE,
+            confidence=1.0,
+            notes=f"mittente non autorizzato: {msg.sender_id}",
+        )
     if msg.is_service:
         return ClassifiedMessage(
             **base, category=Category.NOISE, confidence=1.0, notes="messaggio di servizio"
