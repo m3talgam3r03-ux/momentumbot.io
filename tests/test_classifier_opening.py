@@ -95,7 +95,7 @@ def test_non_openings_are_not_signals(text: str) -> None:
 def test_real_non_openings_are_never_signals(case: dict) -> None:
     result = classify(msg(case["text"]))
     assert result.category is not Category.NEW_SIGNAL_COMPLETE, result
-    assert result.category is Category.AMBIGUOUS  # finché il formato non è implementato
+    assert result.category == case["future"], result.notes
 
 
 def test_duplicate_openings_are_both_recognized() -> None:

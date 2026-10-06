@@ -1,9 +1,9 @@
 """Classificatore: ExportedMessage → ClassifiedMessage.
 
-Stato: riconosce SOLO i messaggi di apertura nei formati catalogati (F-LIMIT, F-RANGE).
-Tutto il resto finisce in AMBIGUOUS con il motivo, NON in NOISE: finché un formato non è
-catalogato non sappiamo se è rumore o un aggiornamento (es. una chiusura).
-Le categorie di aggiornamento/chiusura verranno aggiunte dopo l'export dello storico.
+Ordine: aperture (F-LIMIT, F-RANGE) → aggiornamenti e rumore catalogati
+(``classifier.updates``) → rumore generico (nessuna parola operativa né prezzo) → AMBIGUOUS.
+Un testo che "sembra un'apertura" ma non è leggibile resta AMBIGUOUS e non viene mai
+reinterpretato come aggiornamento.
 
 Mittente (decisione di Lorenzo, 2026-10-06, D1): WDT MOMENTUM è un GRUPPO, quindi
 chiunque vi scriva può produrre un testo con la forma di un segnale. Con
@@ -21,6 +21,11 @@ from __future__ import annotations
 from momentum_master.classifier.models import Category, ClassifiedMessage, Method
 from momentum_master.classifier.normalize import normalize_text
 from momentum_master.classifier.opening import parse_opening
+from momentum_master.classifier.updates import (
+    classify_update,
+    is_chart_caption,
+    is_generic_noise,
+)
 from momentum_master.exporter.models import ExportedMessage
 
 
@@ -54,7 +59,8 @@ def classify(
             notes="solo immagine/media senza testo: mai eseguibile (nessun OCR)",
         )
 
-    parsed = parse_opening(normalize_text(msg.text))
+    normalized = normalize_text(msg.text)
+    parsed = parse_opening(normalized)
     if parsed.ok:
         return ClassifiedMessage(
             **base,
@@ -77,6 +83,38 @@ def classify(
             confidence=0.3,
             notes=f"sembra un'apertura {parsed.format_id} ma: " + "; ".join(parsed.problems),
         )
+    update = classify_update(normalized)
+    if update is not None:
+        return ClassifiedMessage(
+            **base,
+            category=update.category,
+            ref_msg_id=msg.reply_to_msg_id,
+            tp_hit=update.tp_hit,
+            confidence=1.0 if update.category is not Category.AMBIGUOUS else 0.5,
+            notes=update.kind,
+        )
+    if is_chart_caption(
+        normalized, has_media=msg.media_type is not None, is_reply=msg.reply_to_msg_id is not None
+    ):
+        return ClassifiedMessage(
+            **base,
+            category=Category.NOISE,
+            ref_msg_id=msg.reply_to_msg_id,
+            confidence=0.9,
+            notes="didascalia di un grafico in risposta, senza istruzioni",
+        )
+    if is_generic_noise(normalized):
+        return ClassifiedMessage(
+            **base,
+            category=Category.NOISE,
+            ref_msg_id=msg.reply_to_msg_id,
+            confidence=0.9,
+            notes="testo senza livelli né parole operative",
+        )
     return ClassifiedMessage(
-        **base, category=Category.AMBIGUOUS, confidence=0.0, notes="formato non ancora catalogato"
+        **base,
+        category=Category.AMBIGUOUS,
+        ref_msg_id=msg.reply_to_msg_id,
+        confidence=0.0,
+        notes="formato non ancora catalogato",
     )

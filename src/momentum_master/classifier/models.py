@@ -62,6 +62,7 @@ class ClassifiedMessage(BaseModel):
     tps: list[Decimal] = Field(default_factory=list)
     tp_open: bool = False  # il messaggio contiene un TP "OPEN" (senza prezzo)
     ref_msg_id: int | None = None
+    tp_hit: int | None = Field(default=None, ge=1, le=9)  # TP annunciato dal fornitore (TPn HIT)
     close_fraction: float | None = None
     confidence: float = Field(ge=0.0, le=1.0)
     method: Method = Method.REGEX
