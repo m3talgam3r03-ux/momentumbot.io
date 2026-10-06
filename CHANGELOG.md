@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.10.0] - 2026-10-06
+### Aggiunto
+- `replay/`: backtest dello storico sulla stessa pipeline del bot con prezzi M1 (BID + spread), esiti simulati con ipotesi prudenti, CANCEL/CLOSE del fornitore, limite delle posizioni aperte, rapporto con R, win rate, drawdown e settimane.
+- `replay/export_mt5.py`: esportazione dei prezzi M1 da MetaTrader 5 (solo Windows), `requirements-windows.txt` con MetaTrader5==5.0.6231.
+- Script `6_esporta_prezzi_mt5.bat`, `7_replay.bat`.
+### Impatto sui follower
+Nessuno: il replay non invia ordini. Servirà per confermare i filtri (passo 5) con numeri misurati.
+
 ## [0.9.0] - 2026-10-06
 ### Aggiunto
 - `listener/`: ascolto in tempo reale del gruppo (Telethon, sola lettura) in PAPER; messaggi modificati (S8), cancellati (pendente → CANCEL, mercato → notifica), arretrati registrati e mai eseguiti; latenza e heartbeat; comando `--trova-gruppo`.

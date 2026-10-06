@@ -71,6 +71,8 @@
 
 - Listener in tempo reale (PAPER): nuovi/modificati/cancellati, arretrati registrati e mai eseguiti, latenza, heartbeat, riconnessione. Script `4_trova_id_gruppo.bat` e `5_avvia_paper.bat`. **Per avviarlo serve Lorenzo**: id del gruppo nel config + `.env` con le chiavi API sul PC/VPS.
 
+- Replay/backtest (`replay/`): stessa pipeline del bot su prezzi M1, simulazione prudente degli esiti, limite F11 con le operazioni simulate, rapporto settimanale. Export dei prezzi da MT5 (`replay/export_mt5.py`, funzioni MetaTrader5 verificate nel pacchetto 5.0.6231). **Per lanciarlo serve Lorenzo**: MT5 di FPG (anche DEMO) su Windows per esportare i prezzi.
+
 ### Prossimo passo tecnico (Claude)
 Listener in sola lettura sul gruppo (Telethon, PAPER): eventi nuovi e modificati, riconnessione, avvio a freddo che registra senza eseguire. Per il prezzo in PAPER serve una fonte: MT5 (conto demo FPG) oppure solo registrazione senza prezzo.
 

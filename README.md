@@ -98,6 +98,19 @@ Il listener legge **solo** il gruppo configurato, in sola lettura:
 
 Senza una fonte di prezzi (MT5 non ancora collegato), le aperture vengono registrate con il motivo S7 "prezzo non disponibile". In PAPER non parte comunque nessun ordine.
 
+## Replay (backtest) sui prezzi M1
+
+Rigioca lo storico del canale con la **stessa pipeline del bot** (regole S1-S11, filtri, doppioni, D2) e simula l'esito di ogni operazione minuto per minuto.
+1. Prezzi: `scripts\windows\6_esporta_prezzi_mt5.bat` (MT5 di FPG aperto, anche DEMO) → `data\xauusd_m1.csv`.
+2. Replay: `scripts\windows\7_replay.bat` → `data\replay.md`.
+
+Oppure:
+```bash
+python -m momentum_master.replay.export_mt5 --simbolo XAUUSD --dal 2026-08-25 --al 2026-10-07
+python -m momentum_master.replay --storico data/storico.jsonl --prezzi data/xauusd_m1.csv --offset-server 3
+```
+Ipotesi prudenti: SL e TP nello stesso minuto contano come SL; un SELL esce all'ask; si usano solo i minuti successivi alla decisione; nessuno slittamento simulato.
+
 ## Esplorazione dello storico (supporto al passo 2)
 
 ```bash
@@ -112,6 +125,7 @@ src/momentum_master/
   exporter/     passo 1: storico → JSONL
   classifier/   passo 1.1b: normalize.py, numbers.py  (regole: passo 3)
   decision/     motore decisionale, regole di entrata (range), scelta TP/BE
+  replay/       backtest su prezzi M1 + export da MT5
   listener/     ascolto del gruppo in tempo reale (core testabile + Telethon)
   store.py      registro SQLite + comando "spiega"
   pipeline.py   classifica → decide → registra
