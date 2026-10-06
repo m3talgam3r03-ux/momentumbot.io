@@ -25,7 +25,9 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 # Una sequenza di cifre con eventuali separatori interni ".", ",".
-_NUMBER = re.compile(r"\d+(?:[.,]\d+)*")
+# Solo cifre ASCII 0-9: \d di Python accetterebbe anche cifre arabe, devanagari, ecc.
+# (es. "٤١٥٨"), che nel canale non esistono e sarebbero un segnale di testo anomalo.
+_NUMBER = re.compile(r"[0-9]+(?:[.,][0-9]+)*")
 
 
 @dataclass(frozen=True)
