@@ -1,0 +1,2 @@
+# Gli script .bat devono restare con a capo Windows (CRLF)
+*.bat -text

@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.2.0] - 2026-10-06
+### Aggiunto
+- `scripts/windows/`: installazione, export di prova ed export completo con doppio clic.
+- `analysis`: rapporto di esplorazione dello storico (forme ricorrenti, parole, emoji, numeri, risposte, modifiche, orari) come base del catalogo dei formati.
+### Corretto
+- Exporter: la cartella del file di sessione viene creata se manca (prima la prima esecuzione falliva).
+### Impatto sui follower
+Nessuno. Non esiste ancora codice di esecuzione.
+
 ## [0.1.0] - 2026-10-06
 ### Aggiunto
 - Base del progetto (pyproject, ruff, pytest, requirements con versioni fissate, `.env.example`).

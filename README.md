@@ -20,6 +20,16 @@ ruff check src tests
 
 ## Passo 1: esportare lo storico del canale
 
+### Modo rapido (Windows, doppio clic)
+Nella cartella `scripts\windows\`, in ordine:
+1. `1_installa.bat`: crea l'ambiente, lancia i test (devono passare tutti) e apre `.env` da compilare.
+2. `2_esporta_prova.bat`: prova con i primi 50 messaggi.
+3. `3_esporta_tutto.bat`: export completo + rapporto `data\esplorazione.md`. Se si interrompe, rilancialo.
+
+Prima servono Python 3.12 (con "Add python.exe to PATH") e `api_id`/`api_hash` (punto 1 qui sotto).
+
+### Modo manuale
+
 L'exporter usa da Telegram **solo lettura**: niente messaggi inviati, niente conferme di lettura, nessuna iscrizione.
 
 1. Con l'account Telegram **dedicato al bot** (iscritto a WDT MOMENTUM, con verifica in due passaggi attiva) vai su <https://my.telegram.org> → *API development tools* e crea un'app. Annota `api_id` e `api_hash`.
@@ -45,12 +55,21 @@ L'exporter usa da Telegram **solo lettura**: niente messaggi inviati, niente con
 - I messaggi **cancellati** non ci sono. Il riepilogo stima quanti sono dai buchi negli id.
 - Gli screenshot vengono registrati come media: non vengono letti e non saranno mai eseguiti.
 
+## Esplorazione dello storico (supporto al passo 2)
+
+```bash
+python -m momentum_master.analysis --file data/storico.jsonl --out data/esplorazione.md
+```
+Raggruppa i messaggi per "forma" (numeri sostituiti da `N`) e conta parole, emoji, risposte, modifiche e grandezza dei numeri. Non classifica nulla: è la base per scrivere `catalogo_formati.md` partendo dai messaggi reali.
+
 ## Struttura
 
 ```
 src/momentum_master/
   exporter/     passo 1: storico → JSONL
   classifier/   passo 1.1b: normalize.py, numbers.py  (regole: passo 3)
+  analysis/     esplorazione dello storico per il catalogo dei formati
+scripts/windows/  installazione ed export con doppio clic
 tests/
 docs/
 ```

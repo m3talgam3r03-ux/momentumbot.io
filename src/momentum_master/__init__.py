@@ -7,4 +7,4 @@ Stato attuale: passo 1 dell'ordine di lavoro (esportazione dello storico).
 Nessun modulo di esecuzione esiste ancora.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
