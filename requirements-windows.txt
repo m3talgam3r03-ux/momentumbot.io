@@ -1,0 +1,5 @@
+# Solo su Windows (VPS / PC con MetaTrader 5 installato).
+# Versione verificata il 2026-10-06 (wheel per Python 3.13). Se pip non trova la versione per
+# il tuo Python, installa Python 3.13 oppure chiedi la versione compatibile.
+-r requirements.txt
+MetaTrader5==5.0.6231

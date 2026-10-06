@@ -1,6 +1,6 @@
 [project]
 name = "momentum-master"
-version = "0.9.0"
+version = "0.10.0"
 description = "MOMENTUM MASTER: classificazione ed esecuzione dei segnali WDT MOMENTUM su un conto master FPG (MT5)."
 requires-python = ">=3.11"
 
@@ -31,3 +31,4 @@ ignore = ["RUF001", "RUF002", "RUF003"]
 # L'ora del server MT5 è per definizione senza fuso (ora locale del broker): nei test
 # MarketSnapshot.server_time è costruito volutamente "naive".
 "tests/test_engine.py" = ["DTZ001"]
+"tests/test_replay.py" = ["DTZ001"]

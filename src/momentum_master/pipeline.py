@@ -7,6 +7,8 @@ solo se ``cfg.mode`` non è PAPER.
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from momentum_master.classifier.classify import classify
 from momentum_master.config import AppConfig
 from momentum_master.decision.engine import Decision, MarketSnapshot, MessageContext, decide
@@ -20,11 +22,16 @@ def process_message(
     market: MarketSnapshot,
     cfg: AppConfig,
     store: Store,
+    open_positions: int | None = None,
 ) -> Decision:
+    """``open_positions``: posizioni + pendenti aperti in quel momento, se noti (replay,
+    executor). In PAPER dal vivo non esistono posizioni: resta quello del registro (0)."""
     posters = cfg.telegram.channel_poster_ids
     authorized = frozenset(posters) if posters is not None else None
     classified = classify(msg, authorized)
     state = store.engine_state(mctx.received_at_utc, cfg.safety.dedup_window_s)
+    if open_positions is not None:
+        state = replace(state, open_positions=open_positions)
     link = store.signal_link(classified.ref_msg_id) if classified.ref_msg_id is not None else None
     decision = decide(classified, mctx, market, state, cfg, link)
     store.record(
