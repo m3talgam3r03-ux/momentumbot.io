@@ -34,11 +34,12 @@
 ### Decisioni del 2026-10-06 (D1-D5)
 - D1 gruppo → filtro sui mittenti (`classify(..., authorized_sender_ids)`), fatto.
 - D2 fuori range → scarto (`decision/entry.py`), fatto.
+- D4 HEADS UP → il pendente resta aperto, solo notifica all'admin, cancellazione manuale (da implementare con admin_bot e trade_manager).
 - D5 TP1 e niente BE; funzioni `tp_index` e `be_after_tp` pronte e disattivate (`decision/targets.py`), fatto.
 
 ### Da confermare
 - **D3, proposta:** durata del pendente F-LIMIT **90 minuti**, impostata come scadenza **sul broker** (ORDER_TIME_SPECIFIED), così scade anche se il bot si blocca. Inoltre: cancellazione immediata a `LIMIT ORDER CANCELLED`, nessun pendente oltre il rollover giornaliero né nel fine settimana. IPOTESI: nel video due pendenti sono stati annullati dal fornitore dopo circa 90 minuti (16:15 → 17:45; ~17:47 → 19:20). Da verificare sull'export.
-- **D4:** "non cancella il precedente a meno che non sia in profit". Da chiarire cosa sia "il precedente" (il SELL aperto o il BUY pendente) e se il conto FPG sia hedging o netting.
+- **Conto master hedging o netting?** Bloccante prima della DEMO: con D4 il pendente opposto resta aperto e, su un conto netting, se viene eseguito chiude o riduce la posizione aperta.
 - Conferma che `ENTRY RANGE` = apertura a mercato.
 
 ### Rischi emersi dal video

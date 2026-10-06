@@ -16,7 +16,7 @@
 | SL HIT | RESULT_ANNOUNCEMENT | `SL ❌ HIT - Non rientrare aspetta il prossimo.` | Nessuna (SL già sul broker) |
 | **LIMIT ORDER CANCELLED** | **CANCEL** | Risposta a un F-LIMIT: `❌ LIMIT ORDER CANCELLED` | **Cancellare il pendente**: è critico per i follower |
 | LIMIT ORDER FILLED | RESULT_ANNOUNCEMENT | `🎯 LIMIT ORDER FILLED Price: …` | Solo verifica: il nostro pendente dovrebbe essere già eseguito |
-| HEADS UP | AMBIGUOUS | `⚠️ HEADS UP — price is approaching this BUY limit level while the SELL … still running` | Notifica all'admin: **decisione di Lorenzo** (D4) |
+| HEADS UP | AMBIGUOUS | `⚠️ HEADS UP — price is approaching this BUY limit level while the SELL … still running` | Solo notifica all'admin; il pendente resta; cancellazione manuale (D4) |
 | Risultati giornalieri | NOISE | `RISULTATI GIORNALIERI DI MEMENTUM` | Nessuna |
 | Grafico/GIF in risposta, motivazionali, info lotti/account | NOISE | Immagine con didascalia o testo in prosa | Nessuna |
 
@@ -97,7 +97,7 @@ Non vengono usate come controllo automatico. Lo SL resta esattamente quello del 
 - **D1** È un **gruppo**: solo i mittenti autorizzati.
 - **D2** Prezzo fuori dal range → **scarto**.
 - **D3** Consiglio richiesto: proposta in STATO_PROGETTO.md (scadenza lato broker di 90 min, IPOTESI da 2 casi del video).
-- **D4** Da chiarire (vedi STATO_PROGETTO.md).
+- **D4** Il pendente resta aperto: solo notifica all'admin; l'eventuale cancellazione è manuale.
 - **D5** Niente BE per ora; TP configurabile già nel codice.
 
 ## Domande originali (D1-D5)

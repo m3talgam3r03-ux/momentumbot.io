@@ -18,4 +18,4 @@
 | 2026-10-06 | **D2** F-RANGE con prezzo fuori dal range → **scarto**. | BUY confrontato con l'ask, SELL con il bid; bordi inclusi; tolleranza 0 (configurabile, solo dopo replay). |
 | 2026-10-06 | **D5** TP1 per tutti, **niente BE** per ora. | Funzioni già pronte e disattivate: `tp_index` (1-5) e `be_after_tp` (None). Si attivano solo con una nuova versione del config. |
 | 2026-10-06 | **D3** Durata del pendente F-LIMIT: Lorenzo chiede un consiglio. | Proposta in attesa di conferma: vedi STATO_PROGETTO.md. |
-| 2026-10-06 | **D4** HEADS UP: risposta da chiarire. | Domanda di chiarimento aperta. |
+| 2026-10-06 | **D4** HEADS UP (pendente opposto a una posizione aperta): il pendente **resta aperto**; Lorenzo decide se cancellarlo **a mano**. | Nessuna azione automatica: notifica all'admin con il testo del messaggio, il pendente e la posizione aperta. Servirà un comando admin per cancellare il pendente; la riconciliazione deve riconoscere una cancellazione manuale come voluta e non come errore. |
