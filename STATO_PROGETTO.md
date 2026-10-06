@@ -2,7 +2,7 @@
 
 ## 2026-10-06
 
-**Fase corrente:** passo 1 dell'ordine di lavoro (exporter + export dello storico). Codice pronto; **export reale da eseguire**.
+**Fase corrente:** passo 1 completato lato codice (export reale da eseguire). Passi 2 e 3 **avviati in anticipo** sui messaggi di apertura, grazie a 8 screenshot e a un video del canale forniti da Lorenzo.
 **Modalità del bot:** nessuna. Non esiste ancora né classificatore né esecuzione: niente PAPER, DEMO o LIVE.
 
 ### Completato
@@ -12,7 +12,11 @@
 - `classifier.normalize` e `classifier.numbers` (punto 1.1b): normalizzazione del testo e lettura dei numeri con segnalazione dei casi ambigui.
 - Script Windows con doppio clic (`scripts/windows/`) per installazione ed export.
 - `analysis`: rapporto di esplorazione dello storico, pronto per il passo 2.
-- 56 test superati; ruff senza errori.
+- `docs/catalogo_formati.md` v0.1: formati F-RANGE (mercato) e F-LIMIT (pendente), più 10 tipi di messaggi non di apertura. Verificato che 1 pip = 0,10, contato dal centro del range.
+- Classificatore v0.1 (`classifier/classify.py`, `opening.py`, `models.py`): riconosce solo F-RANGE e F-LIMIT; tutto il resto finisce in AMBIGUOUS.
+- Test golden: 12 aperture reali riconosciute con prezzi esatti; 12 messaggi reali non di apertura, nessuno classificato come segnale.
+- L'exporter registra anche `sender_id`, necessario se WDT è un gruppo.
+- 107 test superati; ruff senza errori.
 - Verificato: l'integrazione Telegram di Composio è un bot (Bot API) e non può leggere lo storico di WDT. L'export si fa solo con la sessione utente (Telethon).
 
 ### Decisioni prese
@@ -26,6 +30,17 @@
 1. **Storico esportato** (`data/storico.jsonl` + `.summary.json`): senza lo storico non si possono fare il catalogo dei formati (passo 2) né il classificatore (passo 3).
 2. **NEGATIVE PROMPT**: manca in `docs/prompt-bot-momentum-fpg.md`.
 3. File di riferimento mancanti: `analisi-canali-segnali-oro.md` e `manuale-operativo-rischio-xauusd.md`. Non bloccano i passi 2-3, bloccano il 5 e il 6.
+
+### Domande aperte a Lorenzo (dal catalogo)
+- D1: gruppo o canale? Chi pubblica?
+- D2: F-RANGE con il prezzo fuori dal range: aprire, scartare o mettere un pendente?
+- D3: durata del pendente F-LIMIT sul master.
+- D4: messaggio HEADS UP: cancellare il pendente da soli o solo avvisare?
+- D5: confermare che il BE non si applica (la posizione si chiude a TP1).
+
+### Rischi emersi dal video
+- Le aperture F-RANGE vengono pubblicate **due volte**: il dedup S11 è obbligatorio, non un'opzione.
+- `LIMIT ORDER CANCELLED` va implementato (CANCEL) prima di qualsiasi DEMO con pendenti.
 
 ### Punti aperti (non bloccanti adesso)
 - FPG: copia dei pendenti, replica di modifiche e chiusure parziali, lotti follower < 0,01, ritardo di copia.

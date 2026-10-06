@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.3.0] - 2026-10-06
+### Aggiunto
+- `docs/catalogo_formati.md` v0.1 (da 8 screenshot e da un video del canale).
+- Classificatore v0.1: riconosce le aperture F-RANGE (mercato) e F-LIMIT (pendente) estraendo direzione, entrata, SL, TP e TP OPEN. Qualsiasi deviazione dal formato → AMBIGUOUS con il motivo.
+- Exporter: campo `sender_id` (schema JSONL v2, compatibile con i file v1).
+- Test golden su 12 aperture reali e 12 messaggi reali non di apertura.
+### Impatto sui follower
+Nessuno. Il classificatore non è collegato a nessuna esecuzione.
+
 ## [0.2.0] - 2026-10-06
 ### Aggiunto
 - `scripts/windows/`: installazione, export di prova ed export completo con doppio clic.
