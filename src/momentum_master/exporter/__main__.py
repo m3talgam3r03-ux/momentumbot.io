@@ -31,6 +31,12 @@ def parse_channel(value: str) -> int | str:
     return stripped
 
 
+def prepare_session_path(value: str) -> str:
+    """Crea la cartella del file di sessione: SQLite (usato da Telethon) non la crea da solo."""
+    Path(value).expanduser().parent.mkdir(parents=True, exist_ok=True)
+    return value
+
+
 def _require_env(name: str) -> str:
     value = os.environ.get(name, "").strip()
     if not value:
@@ -45,7 +51,7 @@ async def _run_export(args: argparse.Namespace) -> int:
     load_dotenv()
     api_id = int(_require_env("TG_API_ID"))
     api_hash = _require_env("TG_API_HASH")
-    session_path = _require_env("TG_SESSION_PATH")
+    session_path = prepare_session_path(_require_env("TG_SESSION_PATH"))
 
     client = TelegramClient(session_path, api_id, api_hash)
     # FloodWait fino a questa soglia (secondi) viene atteso automaticamente da Telethon.
