@@ -33,6 +33,8 @@
 - Export reale del canale WDT MOMENTUM: lo esegue Lorenzo (servono le credenziali Telegram, che non devono passare in chat).
 
 ### Da decidere (Lorenzo), dall'analisi dello storico
+- **Limite operazioni al giorno (F11):** il fornitore arriva a **17 segnali distinti al giorno** (mediana circa 10). Con il valore provvisorio di 10 sarebbero stati scartati 44 segnali in 6 settimane. Tenere 10, alzare o togliere?
+- Apertura scritta in italiano (msg 922, "VENDITA XAUUSD (ORO) / FASCE DI ENTRATA"): unico caso, resta AMBIGUOUS (proposta).
 - Segnale 917 (range largo 6, prezzi interi): alzare il limite di plausibilità del range da 3,00 a 6,00, o lasciarlo in AMBIGUOUS? Proposta: lasciarlo (1 caso in 6 settimane).
 - Formato manuale 1128 ("BUY XAU / PE …"): lasciarlo in AMBIGUOUS (proposta) o catalogarlo?
 - Il gruppo nell'export si chiama "SALA 2 (V)": è il gruppo WDT MOMENTUM da cui leggerà il bot?
@@ -63,6 +65,9 @@
 - Filtri F1-F13: da compilare dopo l'osservazione del canale.
 - S9: minuti di blackout del venerdì e dell'apertura settimanale.
 - IPOTESI da verificare: il fuso del server FPG (GMT+2/+3).
+
+### Fatto il 2026-10-06 (sera)
+- Aggiornamenti implementati: CANCEL, CLOSE_FULL, MOVE_BE, risultati, pre-annunci, riepiloghi, didascalie, HEADS UP. Collegamento risposta → segnale, anche attraverso i doppioni. Verifica end-to-end su tutto lo storico.
 
 ### Prossimo passo tecnico (Claude)
 Listener in sola lettura sul gruppo (Telethon, PAPER): eventi nuovi e modificati, riconnessione, avvio a freddo che registra senza eseguire. Per il prezzo in PAPER serve una fonte: MT5 (conto demo FPG) oppure solo registrazione senza prezzo.

@@ -5,6 +5,27 @@
 > **Versione 0.1 — 2026-10-06.** Fonte: 8 screenshot e una registrazione dello schermo di 52 s (5-6 ottobre 2026, circa una giornata di canale) fornite da Lorenzo.
 > **Campione piccolo:** le frequenze sono indicative. Il catalogo va ricontrollato sull'export completo (`storico.jsonl`), che darà anche il testo esatto: emoji, apostrofi e trattini qui sono trascritti da immagini.
 
+## Implementazione (v0.3, 2026-10-06)
+Tutte le categorie della tabella "Sintesi" sono implementate in `classifier/updates.py` e verificate sui testi esatti dello storico:
+
+| Categoria | Messaggi nello storico | Decisione |
+|---|---|---|
+| NEW_SIGNAL_COMPLETE | 399 | apertura (con S1-S11 e filtri) |
+| RESULT_ANNOUNCEMENT (TP/SL HIT, LIMIT FILLED) | 571 | nessuna azione |
+| MOVE_BE (TPn HIT + "Porta lo STOP LOSS…" / "Move SL to entry price (Break Even)") | 175 | nessuna azione finché il BE è spento (D5) |
+| CLOSE_FULL (OUT OF TRADE, TRADE COMPLETE) | 142 | CLOSE sul segnale collegato |
+| CANCEL (LIMIT ORDER CANCELLED) | 21 | CANCEL del pendente collegato |
+| NOISE (pre-annunci, riepiloghi, didascalie dei grafici, saluti) | 615 | nessuna azione |
+| AMBIGUOUS (HEADS UP, istruzioni manuali, formati nuovi) | 53 (~1 al giorno) | notifica all'admin |
+
+Regole di sicurezza:
+- una **didascalia** è rumore solo se è foto/GIF **in risposta** e non contiene parole d'istruzione (SL, TP, chiudi, annulla, exit, BE, rientra, buy/sell…);
+- un testo è **rumore generico** solo se non ha nessuna parola operativa e nessun numero da prezzo;
+- le istruzioni manuali ("Imposta BE siamo a +65", "RIENTRA ‼️", "VENDITA XAUUSD (ORO) / FASCE DI ENTRATA…") restano **AMBIGUOUS**: mai eseguite, sempre notificate;
+- l'etichetta "TP1 (appena preso metti BE)" nella prima riga **non** è un'istruzione: conta solo una riga d'istruzione esplicita.
+
+**Collegamento** (`store.signal_link`): la risposta punta al messaggio originale; se punta alla seconda copia di un doppione, si risale al segnale aperto. Verificato su tutto lo storico: 16 CANCEL e 117 CLOSE collegati; i 30 non collegati rispondono a segnali non aperti (limite giornaliero o rollover) oppure non sono risposte.
+
 ## Novità dall'export completo (v0.2)
 - **Tre varianti** della riga d'entrata F-RANGE, tutte lette: `ENTRY RANGE: a - b` (da sola), `… %0A ➡️ ENTRY RANGE:: a - b`, `… \n➡️ ENTRY RANGE:: a - b` (con "\n" scritto letteralmente). L'apostrofo vero è `’`.
 - **OUT OF TRADE** (`OUT OF TRADE ✅ / Price: … / TP1 secured — exiting now`): chiusura del fornitore, 50 messaggi, sempre in risposta → CLOSE_FULL, da implementare insieme a CANCEL.

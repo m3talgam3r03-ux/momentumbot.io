@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.8.0] - 2026-10-06
+### Aggiunto
+- `classifier/updates.py`: CANCEL (LIMIT ORDER CANCELLED), CLOSE_FULL (OUT OF TRADE, TRADE COMPLETE), MOVE_BE (istruzioni BE in italiano e inglese), risultati, pre-annunci, riepiloghi, didascalie dei grafici; le istruzioni manuali restano AMBIGUOUS.
+- Motore decisionale: CANCEL/CLOSE/MODIFY sul segnale collegato; BE solo se attivato (D5); HEADS UP solo notifica (D4); regole S5/S6/S8 anche sugli aggiornamenti.
+- Registro: collegamento risposta → segnale (anche tramite i doppioni), versione dello schema (v2) con rifiuto dei registri vecchi.
+### Impatto sui follower
+Nessuno oggi (PAPER). Quando l'esecuzione sarà attiva: un pendente annullato dal fornitore verrà cancellato anche sul master (e quindi, se FPG lo replica, sui follower); un "OUT OF TRADE" chiuderà la posizione collegata.
+
 ## [0.7.0] - 2026-10-06
 ### Aggiunto
 - `exporter/desktop_html.py`: lettura dell'export HTML di Telegram Desktop (+ `python -m momentum_master.exporter.desktop_html`).
