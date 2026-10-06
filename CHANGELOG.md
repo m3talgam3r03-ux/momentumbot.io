@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.7.0] - 2026-10-06
+### Aggiunto
+- `exporter/desktop_html.py`: lettura dell'export HTML di Telegram Desktop (+ `python -m momentum_master.exporter.desktop_html`).
+- `docs/analisi_storico_2026-10-06.md`: classificatore su 1976 messaggi reali (399 aperture, 0 discordanze, 0 falsi segnali), doppioni, catalogo completo, esiti dichiarati dal fornitore.
+- Catalogo dei formati v0.2; test con testi esatti dall'export (`tests/data/wdt_real_samples.json`).
+### Impatto sui follower
+Nessuno oggi. Confermato sullo storico: senza l'anti-doppione S11 sarebbero state aperte 136 posizioni in più in 6 settimane.
+
 ## [0.6.1] - 2026-10-06
 ### Corretto (sicurezza della lettura)
 - Il classificatore accettava letture errate: range abbreviato o con refuso (es. "4138.96 - 39.96"), SL/TP/entrata con una cifra persa o in più, cifre non ASCII, intestazione con due direzioni, prezzi a 3 decimali, zeri iniziali. Ora sono tutti AMBIGUOUS.

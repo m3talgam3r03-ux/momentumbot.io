@@ -2,6 +2,7 @@
 
 ## 2026-10-06
 
+**Aggiornamento 2026-10-06 sera:** export dello storico ricevuto (HTML di Telegram Desktop, 1976 messaggi, 26/08 → 06/10). Passi 1-3 verificati sullo storico reale: 399 aperture riconosciute, 0 discordanze nella verifica indipendente, 0 falsi segnali, 2 aperture vere in AMBIGUOUS (917 range largo 6; 1128 formato manuale). Dettagli in `docs/analisi_storico_2026-10-06.md`.
 **Fase corrente:** passo 4 (linker + decision_engine in PAPER) avviato: motore decisionale e registro pronti, collegamento al gruppo in tempo reale da fare.
 **Fase precedente:** passo 1 completato lato codice (export reale da eseguire). Passi 2 e 3 **avviati in anticipo** sui messaggi di apertura, grazie a 8 screenshot e a un video del canale forniti da Lorenzo.
 **Modalità del bot:** nessuna. Non esiste ancora né classificatore né esecuzione: niente PAPER, DEMO o LIVE.
@@ -30,6 +31,11 @@
 
 ### In corso
 - Export reale del canale WDT MOMENTUM: lo esegue Lorenzo (servono le credenziali Telegram, che non devono passare in chat).
+
+### Da decidere (Lorenzo), dall'analisi dello storico
+- Segnale 917 (range largo 6, prezzi interi): alzare il limite di plausibilità del range da 3,00 a 6,00, o lasciarlo in AMBIGUOUS? Proposta: lasciarlo (1 caso in 6 settimane).
+- Formato manuale 1128 ("BUY XAU / PE …"): lasciarlo in AMBIGUOUS (proposta) o catalogarlo?
+- Il gruppo nell'export si chiama "SALA 2 (V)": è il gruppo WDT MOMENTUM da cui leggerà il bot?
 
 ### Bloccanti
 0. **Branch `main` + PR**: Lorenzo ha scelto l'opzione B (riscrittura pulita). Per eseguirla deve passare la sessione in modalità "Accept edits" e approvare il comando quando gli viene richiesto.

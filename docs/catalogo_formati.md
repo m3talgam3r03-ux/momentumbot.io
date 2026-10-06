@@ -1,7 +1,17 @@
 # catalogo_formati.md — WDT MOMENTUM
 
+> **Versione 0.2 — 2026-10-06.** Verificato su tutto lo storico esportato (1976 messaggi, 26/08 → 06/10): vedi `docs/analisi_storico_2026-10-06.md`.
+>
 > **Versione 0.1 — 2026-10-06.** Fonte: 8 screenshot e una registrazione dello schermo di 52 s (5-6 ottobre 2026, circa una giornata di canale) fornite da Lorenzo.
 > **Campione piccolo:** le frequenze sono indicative. Il catalogo va ricontrollato sull'export completo (`storico.jsonl`), che darà anche il testo esatto: emoji, apostrofi e trattini qui sono trascritti da immagini.
+
+## Novità dall'export completo (v0.2)
+- **Tre varianti** della riga d'entrata F-RANGE, tutte lette: `ENTRY RANGE: a - b` (da sola), `… %0A ➡️ ENTRY RANGE:: a - b`, `… \n➡️ ENTRY RANGE:: a - b` (con "\n" scritto letteralmente). L'apostrofo vero è `’`.
+- **OUT OF TRADE** (`OUT OF TRADE ✅ / Price: … / TP1 secured — exiting now`): chiusura del fornitore, 50 messaggi, sempre in risposta → CLOSE_FULL, da implementare insieme a CANCEL.
+- **Pre-annunci, altre forme:** `PREPARATI STA PER ARRIVARE UN OPERAZIONE | SELL XAUUSD` e `PREP | SELL XAUUSD` (Watch zone). Mai aperture.
+- **Segnale manuale** (msg 1128): `BUY XAU / PE 4375 / SL 4370 / Tp1 4378,5`. Non catalogato → AMBIGUOUS.
+- **Range largo 6** con prezzi interi (msg 917): oltre il limite di 3,00 → AMBIGUOUS. Decisione di Lorenzo.
+- Nel footer compare "WDT Momentum Trade Ideas": conferma della fonte.
 
 ## Sintesi
 

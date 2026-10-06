@@ -20,6 +20,13 @@ ruff check src tests
 
 ## Passo 1: esportare lo storico del canale
 
+### Modo più semplice: export di Telegram Desktop
+Telegram Desktop → gruppo → ⋮ → **Esporta cronologia chat** (senza media; HTML o JSON). Per l'HTML:
+```bash
+python -m momentum_master.exporter.desktop_html "C:\percorso\ChatExport_2026-10-06" data/storico.jsonl
+```
+Limite: l'HTML non contiene l'id numerico del mittente né le date di modifica.
+
 ### Modo rapido (Windows, doppio clic)
 Nella cartella `scripts\windows\`, in ordine:
 1. `1_installa.bat`: crea l'ambiente, lancia i test (devono passare tutti) e apre `.env` da compilare.
