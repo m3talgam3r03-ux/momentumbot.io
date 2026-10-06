@@ -8,6 +8,13 @@
 > - **S9**: minuti prima della chiusura del venerdì e dopo l'apertura settimanale da definire.
 > - **Punti aperti con FPG**: copia dei pendenti, replica di modifiche e chiusure parziali, lotti follower < 0,01, ritardo di copia.
 
+## Decisioni di Lorenzo (registro)
+
+| Data | Decisione | Effetto |
+|---|---|---|
+| 2026-10-06 | Il R:R **non** va calcolato dal bot. | F4 (`min_rr_tp1`) non è usato. Le regole di sicurezza restano invariate: S2 controlla solo che SL e TP stiano dalla parte giusta dell'entrata, non calcola il R:R. |
+| 2026-10-06 | Priorità del classificatore: capire il **messaggio di apertura**, cioè direzione, entrata, **SL**, **TP1** e se l'ordine è **a mercato o pendente**. | Il catalogo dei formati parte da questi campi. Lo SL resta obbligatorio: senza SL il segnale non si apre (decisione fissa: SL del fornitore). |
+
 ---
 
 ## MASTER PROMPT

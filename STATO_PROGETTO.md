@@ -15,11 +15,14 @@
 - 56 test superati; ruff senza errori.
 - Verificato: l'integrazione Telegram di Composio è un bot (Bot API) e non può leggere lo storico di WDT. L'export si fa solo con la sessione utente (Telethon).
 
+### Decisioni prese
+- 2026-10-06: R:R non calcolato, F4 non usato. Priorità del classificatore: messaggio di apertura (direzione, entrata, SL, TP1, mercato o pendente). Registrate in `docs/prompt-bot-momentum-fpg.md`.
+
 ### In corso
 - Export reale del canale WDT MOMENTUM: lo esegue Lorenzo (servono le credenziali Telegram, che non devono passare in chat).
 
 ### Bloccanti
-0. **Branch `main` + PR**: il repository ha un solo branch, quindi non c'è una base per la PR. Crearla richiede di riscrivere la storia del branch, operazione bloccata dai permessi della sessione: serve il via libera di Lorenzo (vedi chat).
+0. **Branch `main` + PR**: Lorenzo ha scelto l'opzione B (riscrittura pulita). Per eseguirla deve passare la sessione in modalità "Accept edits" e approvare il comando quando gli viene richiesto.
 1. **Storico esportato** (`data/storico.jsonl` + `.summary.json`): senza lo storico non si possono fare il catalogo dei formati (passo 2) né il classificatore (passo 3).
 2. **NEGATIVE PROMPT**: manca in `docs/prompt-bot-momentum-fpg.md`.
 3. File di riferimento mancanti: `analisi-canali-segnali-oro.md` e `manuale-operativo-rischio-xauusd.md`. Non bloccano i passi 2-3, bloccano il 5 e il 6.
