@@ -18,8 +18,21 @@ from decimal import Decimal
 from pathlib import Path
 
 from momentum_master.classifier.models import ClassifiedMessage, Side
-from momentum_master.decision.engine import Action, Decision, EngineState, RecentSignal
+from momentum_master.decision.engine import (
+    Action,
+    Decision,
+    EngineState,
+    RecentSignal,
+    SignalLink,
+)
 from momentum_master.exporter.models import ExportedMessage
+
+SCHEMA_VERSION = 2
+
+
+class StoreError(Exception):
+    """Registro non utilizzabile (es. creato da una versione precedente)."""
+
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS messages (
@@ -48,7 +61,8 @@ CREATE TABLE IF NOT EXISTS decisions (
     action TEXT NOT NULL, reason TEXT NOT NULL, details TEXT NOT NULL,
     decided_at_utc TEXT NOT NULL, config_version TEXT NOT NULL,
     side TEXT, order_type TEXT, entry_price TEXT, sl TEXT, tp TEXT, tp_index INTEGER,
-    expiry_utc TEXT, bid TEXT, ask TEXT, spread TEXT
+    expiry_utc TEXT, bid TEXT, ask TEXT, spread TEXT,
+    target_msg_id INTEGER, duplicate_of INTEGER
 );
 CREATE INDEX IF NOT EXISTS ix_decisions_time ON decisions(decided_at_utc);
 CREATE INDEX IF NOT EXISTS ix_messages_msg ON messages(msg_id);
@@ -72,7 +86,18 @@ class Store:
         self._db.row_factory = sqlite3.Row
         self._db.execute("PRAGMA journal_mode=WAL")
         self._db.execute("PRAGMA foreign_keys=ON")
+        version = self._db.execute("PRAGMA user_version").fetchone()[0]
+        has_tables = self._db.execute(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='messages'"
+        ).fetchone()[0]
+        if has_tables and version != SCHEMA_VERSION:
+            self._db.close()
+            raise StoreError(
+                f"registro {path} creato con lo schema v{version}, atteso v{SCHEMA_VERSION}: "
+                "archivialo (rinominalo) e riavvia, il bot ne creerà uno nuovo"
+            )
         self._db.executescript(SCHEMA)
+        self._db.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
 
     def close(self) -> None:
         with self._lock:
@@ -122,12 +147,12 @@ class Store:
                 )  # fmt: skip
                 d = decision
                 self._db.execute(
-                    "INSERT INTO decisions VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "INSERT INTO decisions VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (
                         row, d.msg_id, d.action.value, d.reason.value, d.details,
                         _iso(d.decided_at_utc), d.config_version, _s(d.side), d.order_type,
                         _s(d.entry_price), _s(d.sl), _s(d.tp), d.tp_index, _iso(d.expiry_utc),
-                        _s(d.bid), _s(d.ask), _s(d.spread),
+                        _s(d.bid), _s(d.ask), _s(d.spread), d.target_msg_id, d.duplicate_of,
                     ),
                 )  # fmt: skip
                 self._db.execute("COMMIT")
@@ -151,11 +176,11 @@ class Store:
             # S11: confronto con QUALSIASI segnale già visto (aperto o scartato): la seconda
             # copia di un segnale è lo stesso segnale, non una nuova occasione.
             recent = self._db.execute(
-                "SELECT c.side, c.entry_min, c.sl, d.decided_at_utc FROM decisions d "
+                "SELECT d.msg_id, c.side, c.entry_min, c.sl, d.decided_at_utc FROM decisions d "
                 "JOIN classifications c USING (message_row) "
                 "JOIN messages m ON m.id = d.message_row "
                 "WHERE c.category = 'NEW_SIGNAL_COMPLETE' AND m.event = 'new' "
-                "AND d.decided_at_utc >= ?",
+                "AND d.decided_at_utc >= ? ORDER BY d.decided_at_utc, d.msg_id",
                 (since,),
             ).fetchall()
             today = self._db.execute(
@@ -166,6 +191,7 @@ class Store:
             processed_msg_ids=frozenset(ids),
             recent_signals=tuple(
                 RecentSignal(
+                    r["msg_id"],
                     Side(r["side"]),
                     Decimal(r["entry_min"]),
                     Decimal(r["sl"]),
@@ -176,6 +202,26 @@ class Store:
             trades_today=today,
         )
 
+    def signal_link(self, msg_id: int, _depth: int = 0) -> SignalLink | None:
+        """Segnale aperto a cui si riferisce ``msg_id`` (il messaggio a cui un aggiornamento
+        risponde). Se ``msg_id`` era una copia scartata (S11), risale al segnale originale.
+        None se il messaggio non esiste, non è un'apertura o non è stato aperto."""
+        if _depth > 5:
+            return None
+        with self._lock:
+            row = self._db.execute(
+                "SELECT d.action, d.order_type, d.duplicate_of FROM decisions d "
+                "JOIN messages m ON m.id = d.message_row WHERE m.msg_id = ? AND m.event = 'new'",
+                (msg_id,),
+            ).fetchone()
+        if row is None:
+            return None
+        if row["action"] in (Action.OPEN_MARKET.value, Action.OPEN_PENDING.value):
+            return SignalLink(msg_id, row["order_type"])
+        if row["duplicate_of"] is not None:
+            return self.signal_link(row["duplicate_of"], _depth + 1)
+        return None
+
     def explain(self, msg_id: int) -> str:
         """Ricostruzione leggibile di tutto ciò che è successo a un messaggio."""
         with self._lock:
@@ -183,7 +229,8 @@ class Store:
                 "SELECT m.*, c.category, c.side AS c_side, c.order_hint, c.entry_min, "
                 "c.entry_max, c.sl AS c_sl, c.tps, c.notes, d.action, d.reason, d.details, "
                 "d.decided_at_utc, d.config_version, d.order_type, d.entry_price, d.sl AS d_sl, "
-                "d.tp, d.tp_index, d.expiry_utc, d.bid, d.ask, d.spread "
+                "d.tp, d.tp_index, d.expiry_utc, d.bid, d.ask, d.spread, d.target_msg_id, "
+                "d.duplicate_of "
                 "FROM messages m LEFT JOIN classifications c ON c.message_row = m.id "
                 "LEFT JOIN decisions d ON d.message_row = m.id WHERE m.msg_id = ? ORDER BY m.id",
                 (msg_id,),
@@ -205,6 +252,10 @@ class Store:
                 f"  alle {r['decided_at_utc']}, config {r['config_version']}, "
                 f"bid {r['bid']} ask {r['ask']} spread {r['spread']}",
             ]
+            if r["target_msg_id"] is not None:
+                out.append(f"  Segnale su cui agire: {r['target_msg_id']}")
+            if r["duplicate_of"] is not None:
+                out.append(f"  Copia del segnale: {r['duplicate_of']}")
             if r["action"] in (Action.OPEN_MARKET.value, Action.OPEN_PENDING.value):
                 out.append(
                     f"  Ordine: {r['order_type']} @ {r['entry_price']}  SL {r['d_sl']}  "

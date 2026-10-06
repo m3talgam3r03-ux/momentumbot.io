@@ -27,7 +27,7 @@ from pydantic import BaseModel, ConfigDict
 from momentum_master.classifier.models import Category, ClassifiedMessage, OrderHint, Side
 from momentum_master.config import AppConfig, TimeWindow
 from momentum_master.decision.entry import check_range_entry
-from momentum_master.decision.targets import select_take_profit
+from momentum_master.decision.targets import select_take_profit, should_move_to_break_even
 
 ROME = ZoneInfo("Europe/Rome")
 
@@ -99,6 +99,7 @@ class MarketSnapshot:
 
 @dataclass(frozen=True)
 class RecentSignal:
+    msg_id: int
     side: Side
     entry_min: Decimal
     sl: Decimal
@@ -113,6 +114,14 @@ class EngineState:
     recent_signals: tuple[RecentSignal, ...] = ()
     trades_today: int = 0
     open_positions: int = 0
+
+
+@dataclass(frozen=True)
+class SignalLink:
+    """Segnale aperto (o pendente) a cui si riferisce un aggiornamento, risolto dal registro."""
+
+    signal_msg_id: int
+    order_type: Literal["MARKET", "LIMIT"]
 
 
 class Decision(BaseModel):
@@ -131,6 +140,10 @@ class Decision(BaseModel):
     tp: Decimal | None = None
     tp_index: int | None = None
     expiry_utc: datetime | None = None
+    # Aggiornamenti: segnale su cui agire (CANCEL, CLOSE, MODIFY).
+    target_msg_id: int | None = None
+    # S11: copia di quale segnale (per collegare le risposte alla copia giusta).
+    duplicate_of: int | None = None
     bid: Decimal | None = None
     ask: Decimal | None = None
     spread: Decimal | None = None
@@ -278,7 +291,10 @@ def _s11_duplicate(c: _Ctx) -> Check:
             and prev.sl == c.msg.sl
             and c.mctx.received_at_utc - prev.decided_at_utc <= window
         ):
-            return Reason.S11, f"doppione del segnale delle {prev.decided_at_utc:%H:%M:%S} UTC"
+            c.extra["duplicate_of"] = prev.msg_id
+            return Reason.S11, (
+                f"doppione del segnale {prev.msg_id} delle {prev.decided_at_utc:%H:%M:%S} UTC"
+            )
     return None
 
 
@@ -404,8 +420,13 @@ def decide(
     market: MarketSnapshot,
     state: EngineState,
     cfg: AppConfig,
+    link: SignalLink | None = None,
 ) -> Decision:
-    """Decide cosa fare di un messaggio classificato."""
+    """Decide cosa fare di un messaggio classificato.
+
+    ``link``: per gli aggiornamenti, il segnale aperto a cui il messaggio risponde
+    (risolto dal registro, anche quando la risposta punta a una copia del segnale).
+    """
     base = {
         "msg_id": msg.msg_id,
         "decided_at_utc": mctx.received_at_utc.astimezone(UTC),
@@ -415,18 +436,8 @@ def decide(
         "spread": market.spread,
     }
 
-    if msg.category in (Category.NOISE, Category.RESULT_ANNOUNCEMENT):
-        return Decision(**base, action=Action.IGNORE, reason=Reason.NOT_A_SIGNAL, details=msg.notes)
-    if msg.category is Category.AMBIGUOUS:
-        return Decision(**base, action=Action.IGNORE, reason=Reason.AMBIGUOUS, details=msg.notes)
-    if msg.category is not Category.NEW_SIGNAL_COMPLETE and mctx.event == "new":
-        # Aggiornamenti (CANCEL, UPDATE_SL, ...): gestiti dal trade_manager, non ancora attivo.
-        return Decision(
-            **base,
-            action=Action.IGNORE,
-            reason=Reason.AMBIGUOUS,
-            details=f"{msg.category}: aggiornamento non ancora gestito, notifica admin",
-        )
+    if msg.category is not Category.NEW_SIGNAL_COMPLETE:
+        return _decide_non_opening(msg, mctx, state, cfg, link, base)
 
     c = _Ctx(msg, mctx, market, state, cfg)
     for check in (*SAFETY_CHECKS, *FILTER_CHECKS):
@@ -434,7 +445,7 @@ def decide(
         if failed is not None:
             reason, details = failed
             return Decision(**base, action=Action.REJECT, reason=reason, details=details,
-                            side=msg.side)  # fmt: skip
+                            side=msg.side, duplicate_of=c.extra.get("duplicate_of"))  # fmt: skip
 
     common = {"side": msg.side, "sl": msg.sl, "tp": c.tp, "tp_index": c.tp_index}
     if msg.order_hint is OrderHint.LIMIT:
@@ -448,3 +459,69 @@ def decide(
         details="apertura a mercato approvata", order_type="MARKET",
         entry_price=c.extra["execution_price"],
     )  # fmt: skip
+
+
+def _decide_non_opening(
+    msg: ClassifiedMessage,
+    mctx: MessageContext,
+    state: EngineState,
+    cfg: AppConfig,
+    link: SignalLink | None,
+    base: dict,
+) -> Decision:
+    """Aggiornamenti, risultati, rumore e AMBIGUOUS.
+
+    Il motore dice COSA fare sul segnale collegato; sarà l'executor a verificare sul broker
+    lo stato reale (pendente ancora vivo? posizione già chiusa a TP1?) e a non fare nulla
+    se non c'è più nulla da fare.
+    """
+
+    def out(action: Action, reason: Reason, details: str, target: int | None = None) -> Decision:
+        return Decision(**base, action=action, reason=reason, details=details,
+                        target_msg_id=target)  # fmt: skip
+
+    if msg.category is Category.NOISE:
+        return out(Action.IGNORE, Reason.NOT_A_SIGNAL, msg.notes)
+    if msg.category is Category.AMBIGUOUS:
+        return out(Action.IGNORE, Reason.AMBIGUOUS, f"{msg.notes} → notifica admin")
+
+    actionable = msg.category in (Category.CANCEL, Category.CLOSE_FULL, Category.MOVE_BE) or (
+        msg.category is Category.RESULT_ANNOUNCEMENT and msg.tp_hit is not None
+    )
+    if not actionable:
+        return out(Action.IGNORE, Reason.NOT_A_SIGNAL, msg.notes)
+
+    # Regole di sicurezza valide anche per gli aggiornamenti.
+    if mctx.event == "edit":
+        return out(Action.IGNORE, Reason.S8, f"{msg.notes} modificato: solo notifica admin")
+    if msg.msg_id in state.processed_msg_ids:
+        return out(Action.IGNORE, Reason.S6, f"msg_id {msg.msg_id} già elaborato")
+    if mctx.is_forward or not mctx.is_live:
+        why = f"{msg.notes} arretrato o inoltrato: lo gestisce la riconciliazione"
+        return out(Action.IGNORE, Reason.S5, why)
+
+    wants_be = msg.tp_hit is not None and should_move_to_break_even(msg.tp_hit, cfg.targets)
+    if msg.category in (Category.MOVE_BE, Category.RESULT_ANNOUNCEMENT) and not wants_be:
+        why = "BE disattivato (decisione D5)" if cfg.targets.be_after_tp is None else (
+            f"BE previsto da TP{cfg.targets.be_after_tp}, annunciato TP{msg.tp_hit}"
+        )  # fmt: skip
+        return out(Action.IGNORE, Reason.NOT_A_SIGNAL, f"{msg.notes}: {why}")
+
+    if link is None:
+        ref = msg.ref_msg_id
+        where = f"risposta a {ref}" if ref is not None else "non in risposta a un segnale"
+        why = f"{msg.notes} ({where}): nessun segnale aperto collegato → notifica admin"
+        return out(Action.IGNORE, Reason.AMBIGUOUS, why)
+
+    target = link.signal_msg_id
+    if msg.category is Category.CANCEL:
+        if link.order_type != "LIMIT":
+            why = f"CANCEL su un segnale a mercato ({target}) → notifica admin"
+            return out(Action.IGNORE, Reason.AMBIGUOUS, why, target)
+        return out(Action.CANCEL, Reason.OK, f"cancellare il pendente del segnale {target}", target)
+    if msg.category is Category.CLOSE_FULL:
+        return out(Action.CLOSE, Reason.OK,
+                   f"{msg.notes}: chiudere la posizione (o il pendente) del segnale {target}",
+                   target)  # fmt: skip
+    why = f"TP{msg.tp_hit} annunciato: SL a pareggio sul segnale {target}"
+    return out(Action.MODIFY, Reason.OK, why, target)

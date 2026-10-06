@@ -207,13 +207,17 @@ def test_s4_stop_too_close_for_broker() -> None:
 
 
 def test_s11_duplicate_post_is_rejected() -> None:
-    previous = RecentSignal(Side.SELL, D("4138.96"), D("4147.96"), RECEIVED - timedelta(seconds=20))
+    previous = RecentSignal(
+        99, Side.SELL, D("4138.96"), D("4147.96"), RECEIVED - timedelta(seconds=20)
+    )
     d = run(state=EngineState(recent_signals=(previous,)))
     assert d.reason is Reason.S11
 
 
 def test_s11_old_duplicate_outside_window_is_new() -> None:
-    previous = RecentSignal(Side.SELL, D("4138.96"), D("4147.96"), RECEIVED - timedelta(hours=1))
+    previous = RecentSignal(
+        99, Side.SELL, D("4138.96"), D("4147.96"), RECEIVED - timedelta(hours=1)
+    )
     assert run(state=EngineState(recent_signals=(previous,))).action is Action.OPEN_MARKET
 
 

@@ -1,4 +1,4 @@
-"""Pipeline di un messaggio: classifica → decide → registra.
+"""Pipeline di un messaggio: classifica → collega → decide → registra.
 
 Collega i pezzi puri (classificatore, motore) al registro. Non invia ordini: in PAPER la
 decisione viene solo registrata. L'esecuzione su MT5 arriverà al passo 6 e partirà da qui
@@ -25,7 +25,8 @@ def process_message(
     authorized = frozenset(posters) if posters is not None else None
     classified = classify(msg, authorized)
     state = store.engine_state(mctx.received_at_utc, cfg.safety.dedup_window_s)
-    decision = decide(classified, mctx, market, state, cfg)
+    link = store.signal_link(classified.ref_msg_id) if classified.ref_msg_id is not None else None
+    decision = decide(classified, mctx, market, state, cfg, link)
     store.record(
         msg,
         classified,
