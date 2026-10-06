@@ -73,6 +73,7 @@ def message_to_record(msg: Any, channel_id: int, exported_at: datetime) -> Expor
         grouped_id=getattr(msg, "grouped_id", None),
         is_forward=getattr(msg, "fwd_from", None) is not None,
         post_author=getattr(msg, "post_author", None),
+        sender_id=getattr(msg, "sender_id", None),
         is_service=action is not None,
         service_action=type(action).__name__ if action is not None else None,
         exported_at_utc=exported_at.astimezone(UTC),

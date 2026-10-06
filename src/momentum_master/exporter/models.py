@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 class ExportedMessage(BaseModel):
@@ -35,6 +35,9 @@ class ExportedMessage(BaseModel):
     grouped_id: int | None = None
     is_forward: bool = False
     post_author: str | None = None
+    # Mittente: nei gruppi è l'utente che ha scritto; nei post di canale Telethon dà None.
+    # Serve a filtrare i soli account autorizzati (config: channel_poster_ids).
+    sender_id: int | None = None
     is_service: bool = False
     service_action: str | None = None
     exported_at_utc: datetime

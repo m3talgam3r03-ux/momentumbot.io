@@ -18,6 +18,7 @@ from telethon.tl.types import (
     MessageReplyHeader,
     MessageService,
     PeerChannel,
+    PeerUser,
 )
 
 from momentum_master.exporter.export import export_channel, message_to_record, read_jsonl
@@ -93,6 +94,13 @@ def test_forward_and_author() -> None:
     rec = message_to_record(msg, CHANNEL_ID, NOW)
     assert rec.is_forward
     assert rec.post_author == "Admin"
+
+
+def test_sender_in_group_and_channel() -> None:
+    in_group = message_to_record(make_msg(20, "BUY", from_id=PeerUser(42)), CHANNEL_ID, NOW)
+    channel_post = message_to_record(make_msg(21, "BUY"), CHANNEL_ID, NOW)
+    assert in_group.sender_id == 42
+    assert channel_post.sender_id is None
 
 
 def test_service_message() -> None:
