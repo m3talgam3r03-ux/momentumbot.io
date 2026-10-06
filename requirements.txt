@@ -4,3 +4,5 @@ telethon==1.45.0
 pydantic==2.13.5
 python-dotenv==1.2.4
 pyyaml==6.0.3
+# Fusi orari (Europe/Rome) su Windows, dove il sistema non li fornisce a zoneinfo.
+tzdata==2026.5

@@ -1,6 +1,6 @@
 [project]
 name = "momentum-master"
-version = "0.5.0"
+version = "0.6.0"
 description = "MOMENTUM MASTER: classificazione ed esecuzione dei segnali WDT MOMENTUM su un conto master FPG (MT5)."
 requires-python = ">=3.11"
 
@@ -26,3 +26,8 @@ src = ["src", "tests"]
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "DTZ"]
 # RUF001-003: caratteri Unicode "ambigui" sono voluti (emoji e testi in italiano).
 ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.per-file-ignores]
+# L'ora del server MT5 è per definizione senza fuso (ora locale del broker): nei test
+# MarketSnapshot.server_time è costruito volutamente "naive".
+"tests/test_engine.py" = ["DTZ001"]
