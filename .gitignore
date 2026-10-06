@@ -1,0 +1,25 @@
+# Segreti e sessioni: MAI nel repository
+.env
+*.session
+*.session-journal
+
+# Dati del canale e database (restano sulla macchina, non nel repo)
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Log
+logs/
+*.log

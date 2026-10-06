@@ -1,0 +1,5 @@
+# Dipendenze di esecuzione, versioni fissate.
+# MetaTrader5 verrà aggiunto al passo 6 (solo Windows).
+telethon==1.45.0
+pydantic==2.13.5
+python-dotenv==1.2.4
