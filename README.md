@@ -5,7 +5,7 @@ Legge il canale Telegram WDT MOMENTUM, classifica ogni messaggio, decide con reg
 - Specifica completa: [`docs/prompt-bot-momentum-fpg.md`](docs/prompt-bot-momentum-fpg.md)
 - Stato del progetto: [`STATO_PROGETTO.md`](STATO_PROGETTO.md)
 
-> Stato attuale: **passo 1 (esportazione dello storico)**. Non esiste ancora codice che invii ordini.
+> Stato attuale: **PAPER** (classifica, decide e registra; nessun codice che invii ordini). Vedi `STATO_PROGETTO.md`.
 
 ## Installazione (sviluppo)
 
@@ -98,6 +98,13 @@ Il listener legge **solo** il gruppo configurato, in sola lettura:
 
 Senza una fonte di prezzi (MT5 non ancora collegato), le aperture vengono registrate con il motivo S7 "prezzo non disponibile". In PAPER non parte comunque nessun ordine.
 
+## Rapporto giornaliero
+
+```bash
+python -m momentum_master.report data/momentum.sqlite --giorno 2026-10-06
+```
+oppure `scripts\windows\8_rapporto.bat`. Contiene messaggi per categoria, aperture e scarti per motivo, azioni sugli aggiornamenti, latenza e AMBIGUOUS da rivedere. Il registro viene aperto in sola lettura.
+
 ## Replay (backtest) sui prezzi M1
 
 Rigioca lo storico del canale con la **stessa pipeline del bot** (regole S1-S11, filtri, doppioni, D2) e simula l'esito di ogni operazione minuto per minuto.
@@ -128,6 +135,7 @@ src/momentum_master/
   replay/       backtest su prezzi M1 + export da MT5
   listener/     ascolto del gruppo in tempo reale (core testabile + Telethon)
   store.py      registro SQLite + comando "spiega"
+  report.py     rapporto giornaliero dal registro
   pipeline.py   classifica → decide → registra
   config.py     modello e validazione del config
   analysis/     esplorazione dello storico per il catalogo dei formati

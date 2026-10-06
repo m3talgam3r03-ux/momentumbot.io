@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [0.11.0] - 2026-10-06
+### Aggiunto
+- `report.py`: rapporto giornaliero dal registro (ora di Roma, sola lettura) e script `8_rapporto.bat`.
+- `STATO_PROGETTO.md` riscritto come fotografia attuale, con l'elenco di ciò che serve a Lorenzo.
+### Impatto sui follower
+Nessuno.
+
 ## [0.10.0] - 2026-10-06
 ### Aggiunto
 - `replay/`: backtest dello storico sulla stessa pipeline del bot con prezzi M1 (BID + spread), esiti simulati con ipotesi prudenti, CANCEL/CLOSE del fornitore, limite delle posizioni aperte, rapporto con R, win rate, drawdown e settimane.

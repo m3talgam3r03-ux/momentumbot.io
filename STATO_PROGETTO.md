@@ -1,81 +1,51 @@
 # STATO_PROGETTO.md
 
-## 2026-10-06
+## 2026-10-06 (fine giornata) — versione 0.11.0
 
-**Aggiornamento 2026-10-06 sera:** export dello storico ricevuto (HTML di Telegram Desktop, 1976 messaggi, 26/08 → 06/10). Passi 1-3 verificati sullo storico reale: 399 aperture riconosciute, 0 discordanze nella verifica indipendente, 0 falsi segnali, 2 aperture vere in AMBIGUOUS (917 range largo 6; 1128 formato manuale). Dettagli in `docs/analisi_storico_2026-10-06.md`.
-**Fase corrente:** passo 4 (linker + decision_engine in PAPER) avviato: motore decisionale e registro pronti, collegamento al gruppo in tempo reale da fare.
-**Fase precedente:** passo 1 completato lato codice (export reale da eseguire). Passi 2 e 3 **avviati in anticipo** sui messaggi di apertura, grazie a 8 screenshot e a un video del canale forniti da Lorenzo.
-**Modalità del bot:** nessuna. Non esiste ancora né classificatore né esecuzione: niente PAPER, DEMO o LIVE.
+**Fase corrente:** passi 1-4 completati lato codice (export, catalogo, classificatore, decisioni in PAPER). Passo 5 (filtri + replay) pronto: **aspetta i prezzi M1 da MT5**.
+**Modalità del bot:** PAPER (bloccata dal config finché i filtri non sono confermati). Nessun codice di esecuzione su MT5: nessun ordine può partire.
+**Test:** 1152 superati, ruff senza errori.
 
 ### Completato
-- Base del progetto: pyproject (ruff, pytest), requirements con versioni fissate, `.env.example`, `.gitignore` (segreti, sessioni e dati esclusi).
-- `docs/prompt-bot-momentum-fpg.md`: master prompt salvato integralmente (v1, 2026-10-06).
-- `exporter`: esportazione in sola lettura dello storico in JSONL, con ripresa, scrittura sicura (`.part`) e riepilogo statistico.
-- `classifier.normalize` e `classifier.numbers` (punto 1.1b): normalizzazione del testo e lettura dei numeri con segnalazione dei casi ambigui.
-- Script Windows con doppio clic (`scripts/windows/`) per installazione ed export.
-- `analysis`: rapporto di esplorazione dello storico, pronto per il passo 2.
-- `docs/catalogo_formati.md` v0.1: formati F-RANGE (mercato) e F-LIMIT (pendente), più 10 tipi di messaggi non di apertura. Verificato che 1 pip = 0,10, contato dal centro del range.
-- Classificatore v0.1 (`classifier/classify.py`, `opening.py`, `models.py`): riconosce solo F-RANGE e F-LIMIT; tutto il resto finisce in AMBIGUOUS.
-- Test golden: 12 aperture reali riconosciute con prezzi esatti; 12 messaggi reali non di apertura, nessuno classificato come segnale.
-- L'exporter registra anche `sender_id`, necessario se WDT è un gruppo.
-- `config/config.yaml` v0.1.0 + `config.py`: config validato. Il bot non parte con un config errato; DEMO e LIVE sono bloccati senza filtri confermati e dati FPG; chiavi sconosciute rifiutate; orari senza virgolette rifiutati (YAML li leggerebbe come numeri).
-- Email a FPG preparata (8 domande): in attesa dell'invio da parte di Lorenzo.
-- Motore decisionale (`decision/engine.py`): S1-S11 + filtri F in ordine, un test per ogni reason_code. Pendenti con scadenza sul broker, ridotta prima del rollover.
-- Registro SQLite (`store.py`) + `pipeline.py` + comando "spiega" (`python -m momentum_master.store`): ogni decisione ricostruibile.
-- S11 corretto in fase di sviluppo: il doppione si confronta con qualsiasi segnale già visto, anche scartato (altrimenti la seconda copia di un segnale scartato poteva essere aperta).
-- **Revisione avversaria del classificatore** (richiesta di Lorenzo): trovate e chiuse 7 letture errate accettate, di cui 2 gravi (range abbreviato "4138.96 - 39.96" letto come range di 4.099 punti; SL con una cifra persa "415.15" accettato su un BUY). Aggiunti controlli di plausibilità, cifre solo ASCII, niente zeri iniziali. Test: 20 casi d'attacco, oltre 800 mutazioni mirate su ogni prezzo, fuzzing.
-- Verificato: l'integrazione Telegram di Composio è un bot (Bot API) e non può leggere lo storico di WDT. L'export si fa solo con la sessione utente (Telethon).
+| Area | Cosa c'è | Prova |
+|---|---|---|
+| Storico | Export Telethon + lettore dell'export HTML di Telegram Desktop | 1976 messaggi reali letti (26/08 → 06/10) |
+| Catalogo | `docs/catalogo_formati.md` v0.3, `docs/analisi_storico_2026-10-06.md` | ogni tipo di messaggio, con frequenze ed esempi reali |
+| Classificatore | Aperture F-RANGE / F-LIMIT, aggiornamenti (CANCEL, CLOSE, BE), risultati, rumore; istruzioni manuali → AMBIGUOUS | 399/399 aperture, 0 discordanze, 0 falsi segnali; 240.000 messaggi rovinati: 0 letture sbagliate |
+| Decisioni | Regole S1-S11, filtri F, doppioni (S11), D2 fuori range, CANCEL/CLOSE sul segnale collegato, BE spento (D5), HEADS UP solo notifica (D4), messaggi cancellati | un test per ogni motivo di scarto; collegamento verificato su tutto lo storico |
+| Registro | SQLite con versione dello schema, comando "spiega" | ogni decisione ricostruibile |
+| PAPER dal vivo | Listener Telethon in sola lettura, arretrati registrati e mai eseguiti, latenza, heartbeat | test del nucleo; avvio reale da fare |
+| Replay | Stessa pipeline su prezzi M1, esiti simulati in modo prudente, export prezzi da MT5 | test su barre sintetiche; replay reale da fare |
+| Rapporto | Rapporto giornaliero dal registro (`python -m momentum_master.report`) | test |
+| Config | `config/config.yaml` validato, PAPER forzata senza filtri confermati | test |
 
-### Decisioni prese
-- 2026-10-06: R:R non calcolato, F4 non usato. Priorità del classificatore: messaggio di apertura (direzione, entrata, SL, TP1, mercato o pendente). Registrate in `docs/prompt-bot-momentum-fpg.md`.
+### Decisioni prese (registro completo in `docs/prompt-bot-momentum-fpg.md`)
+- R:R non calcolato (F4 non usato); priorità al messaggio di apertura.
+- D1 è un gruppo → solo mittenti autorizzati. D2 fuori range → scarto. D4 HEADS UP → solo notifica, cancellazione manuale. D5 TP1, niente BE (funzioni pronte e spente).
 
-### In corso
-- Export reale del canale WDT MOMENTUM: lo esegue Lorenzo (servono le credenziali Telegram, che non devono passare in chat).
+### Serve Lorenzo — per proseguire
+**Bloccanti per la PAPER dal vivo**
+1. `telegram.group_id` nel config: `scripts\windows\4_trova_id_gruppo.bat`.
+2. `.env` con `TG_API_ID` / `TG_API_HASH` sul PC o VPS (my.telegram.org).
+3. Confermare che "SALA 2 (V)" (nome nell'export) è il gruppo WDT MOMENTUM da leggere.
 
-### Da decidere (Lorenzo), dall'analisi dello storico
-- **Limite operazioni al giorno (F11):** il fornitore arriva a **17 segnali distinti al giorno** (mediana circa 10). Con il valore provvisorio di 10 sarebbero stati scartati 44 segnali in 6 settimane. Tenere 10, alzare o togliere?
-- Apertura scritta in italiano (msg 922, "VENDITA XAUUSD (ORO) / FASCE DI ENTRATA"): unico caso, resta AMBIGUOUS (proposta).
-- Segnale 917 (range largo 6, prezzi interi): alzare il limite di plausibilità del range da 3,00 a 6,00, o lasciarlo in AMBIGUOUS? Proposta: lasciarlo (1 caso in 6 settimane).
-- Formato manuale 1128 ("BUY XAU / PE …"): lasciarlo in AMBIGUOUS (proposta) o catalogarlo?
-- Il gruppo nell'export si chiama "SALA 2 (V)": è il gruppo WDT MOMENTUM da cui leggerà il bot?
+**Bloccanti per il replay (passo 5)**
+4. MT5 di FPG (anche DEMO) su Windows → `6_esporta_prezzi_mt5.bat` → `7_replay.bat` → mandare `data\replay.md`.
 
-### Bloccanti
-0. **Branch `main` + PR**: Lorenzo ha scelto l'opzione B (riscrittura pulita). Per eseguirla deve passare la sessione in modalità "Accept edits" e approvare il comando quando gli viene richiesto.
-1. **Storico esportato** (`data/storico.jsonl` + `.summary.json`): senza lo storico non si possono fare il catalogo dei formati (passo 2) né il classificatore (passo 3).
-2. **NEGATIVE PROMPT**: manca in `docs/prompt-bot-momentum-fpg.md`.
-3. File di riferimento mancanti: `analisi-canali-segnali-oro.md` e `manuale-operativo-rischio-xauusd.md`. Non bloccano i passi 2-3, bloccano il 5 e il 6.
+**Decisioni**
+5. F11: il fornitore arriva a 17 segnali/giorno; il limite provvisorio è 10 (44 segnali scartati in 6 settimane). Tenere, alzare, togliere?
+6. D3: pendenti con scadenza di 90 minuti sul broker (proposta). OK?
+7. Segnale 917 (range largo 6), formato manuale 1128, apertura in italiano 922: lasciarli in AMBIGUOUS (proposta)?
+8. Confermare che `ENTRY RANGE` = apertura a mercato (lo storico non mostra casi contrari).
 
-### Decisioni del 2026-10-06 (D1-D5)
-- D1 gruppo → filtro sui mittenti (`classify(..., authorized_sender_ids)`), fatto.
-- D2 fuori range → scarto (`decision/entry.py`), fatto.
-- D4 HEADS UP → il pendente resta aperto, solo notifica all'admin, cancellazione manuale (da implementare con admin_bot e trade_manager).
-- D5 TP1 e niente BE; funzioni `tp_index` e `be_after_tp` pronte e disattivate (`decision/targets.py`), fatto.
+**Prima della DEMO**
+9. Risposte di FPG (email pronta): hedging/netting, copia di pendenti/modifiche/cancellazioni, lotti < 0,01, ritardo, simbolo e fuso del server.
+10. NEGATIVE PROMPT (oppure "fallo tu"); file `analisi-canali-segnali-oro.md` e `manuale-operativo-rischio-xauusd.md`.
+11. Capitale del conto master (per il lotto, oggi un segnaposto da 0,01).
+12. Parere legale sul servizio di copia verso terzi.
+13. PR su GitHub: modalità "Accept edits" + "procedi con B".
 
-### Da confermare
-- **D3, proposta:** durata del pendente F-LIMIT **90 minuti**, impostata come scadenza **sul broker** (ORDER_TIME_SPECIFIED), così scade anche se il bot si blocca. Inoltre: cancellazione immediata a `LIMIT ORDER CANCELLED`, nessun pendente oltre il rollover giornaliero né nel fine settimana. IPOTESI: nel video due pendenti sono stati annullati dal fornitore dopo circa 90 minuti (16:15 → 17:45; ~17:47 → 19:20). Da verificare sull'export.
-- **Conto master hedging o netting?** Bloccante prima della DEMO: con D4 il pendente opposto resta aperto e, su un conto netting, se viene eseguito chiude o riduce la posizione aperta.
-- Conferma che `ENTRY RANGE` = apertura a mercato.
-
-### Rischi emersi dal video
-- Le aperture F-RANGE vengono pubblicate **due volte**: il dedup S11 è obbligatorio, non un'opzione.
-- `LIMIT ORDER CANCELLED` va implementato (CANCEL) prima di qualsiasi DEMO con pendenti.
-
-### Punti aperti (non bloccanti adesso)
-- FPG: copia dei pendenti, replica di modifiche e chiusure parziali, lotti follower < 0,01, ritardo di copia.
-- Filtri F1-F13: da compilare dopo l'osservazione del canale.
-- S9: minuti di blackout del venerdì e dell'apertura settimanale.
-- IPOTESI da verificare: il fuso del server FPG (GMT+2/+3).
-
-### Fatto il 2026-10-06 (sera)
-- Aggiornamenti implementati: CANCEL, CLOSE_FULL, MOVE_BE, risultati, pre-annunci, riepiloghi, didascalie, HEADS UP. Collegamento risposta → segnale, anche attraverso i doppioni. Verifica end-to-end su tutto lo storico.
-
-- Listener in tempo reale (PAPER): nuovi/modificati/cancellati, arretrati registrati e mai eseguiti, latenza, heartbeat, riconnessione. Script `4_trova_id_gruppo.bat` e `5_avvia_paper.bat`. **Per avviarlo serve Lorenzo**: id del gruppo nel config + `.env` con le chiavi API sul PC/VPS.
-
-- Replay/backtest (`replay/`): stessa pipeline del bot su prezzi M1, simulazione prudente degli esiti, limite F11 con le operazioni simulate, rapporto settimanale. Export dei prezzi da MT5 (`replay/export_mt5.py`, funzioni MetaTrader5 verificate nel pacchetto 5.0.6231). **Per lanciarlo serve Lorenzo**: MT5 di FPG (anche DEMO) su Windows per esportare i prezzi.
-
-### Prossimo passo tecnico (Claude)
-Listener in sola lettura sul gruppo (Telethon, PAPER): eventi nuovi e modificati, riconnessione, avvio a freddo che registra senza eseguire. Per il prezzo in PAPER serve una fonte: MT5 (conto demo FPG) oppure solo registrazione senza prezzo.
-
-### Prossimo passo
-Lorenzo esegue `scripts\windows\1_installa.bat`, poi `2_esporta_prova.bat` e `3_esporta_tutto.bat`, e manda `storico.jsonl`, `storico.summary.json` ed `esplorazione.md`.
-Poi: passo 2, cioè `catalogo_formati.md` e l'elenco delle domande sui messaggi ambigui.
+### Prossimi passi tecnici (Claude), dopo i punti sopra
+- Notifiche Telegram (gruppo follower + canale admin) e comandi admin: servono il token del bot di notifica e gli id delle chat.
+- Executor e trade_manager su MT5 (passo 6, DEMO): servono le risposte di FPG.
+- Kill switch, servizio Windows (NSSM), runbook, checklist pre-live.
