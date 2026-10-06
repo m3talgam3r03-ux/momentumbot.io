@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.5.0] - 2026-10-06
+### Aggiunto
+- `config/config.yaml` (v0.1.0, commentato) e `config.py` (modello pydantic + `python -m momentum_master.config`).
+- Blocchi: config non valido → il bot non parte; DEMO/LIVE solo con filtri confermati e dati FPG; chiavi sconosciute e orari senza virgolette rifiutati.
+- Dipendenza `pyyaml==6.0.3`.
+### Impatto sui follower
+Nessuno: il bot resta in PAPER per costruzione finché Lorenzo non conferma i filtri.
+
 ## [0.4.0] - 2026-10-06
 ### Aggiunto
 - Filtro sui mittenti autorizzati nel classificatore (D1: WDT è un gruppo).

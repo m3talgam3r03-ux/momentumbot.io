@@ -16,7 +16,9 @@
 - Classificatore v0.1 (`classifier/classify.py`, `opening.py`, `models.py`): riconosce solo F-RANGE e F-LIMIT; tutto il resto finisce in AMBIGUOUS.
 - Test golden: 12 aperture reali riconosciute con prezzi esatti; 12 messaggi reali non di apertura, nessuno classificato come segnale.
 - L'exporter registra anche `sender_id`, necessario se WDT è un gruppo.
-- 131 test superati; ruff senza errori.
+- `config/config.yaml` v0.1.0 + `config.py`: config validato. Il bot non parte con un config errato; DEMO e LIVE sono bloccati senza filtri confermati e dati FPG; chiavi sconosciute rifiutate; orari senza virgolette rifiutati (YAML li leggerebbe come numeri).
+- Email a FPG preparata (8 domande): in attesa dell'invio da parte di Lorenzo.
+- 154 test superati; ruff senza errori.
 - Verificato: l'integrazione Telegram di Composio è un bot (Bot API) e non può leggere lo storico di WDT. L'export si fa solo con la sessione utente (Telethon).
 
 ### Decisioni prese

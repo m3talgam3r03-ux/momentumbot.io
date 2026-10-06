@@ -55,6 +55,18 @@ L'exporter usa da Telegram **solo lettura**: niente messaggi inviati, niente con
 - I messaggi **cancellati** non ci sono. Il riepilogo stima quanti sono dai buchi negli id.
 - Gli screenshot vengono registrati come media: non vengono letti e non saranno mai eseguiti.
 
+## Configurazione
+
+Il file è `config/config.yaml`, commentato riga per riga. Per controllarlo:
+```bash
+python -m momentum_master.config config/config.yaml
+```
+- Se il config non è valido, il bot **non parte** e l'errore indica il campo sbagliato.
+- `demo` e `live` vengono rifiutati finché i filtri non sono confermati e mancano i dati di FPG (simbolo, server, mittenti autorizzati, admin).
+- Le chiavi sconosciute vengono rifiutate, quindi un errore di battitura non passa inosservato.
+- Gli orari vanno sempre tra virgolette (`"23:50"`).
+- Nessun segreto nel config: i segreti vanno solo nel `.env`.
+
 ## Esplorazione dello storico (supporto al passo 2)
 
 ```bash
@@ -68,7 +80,10 @@ Raggruppa i messaggi per "forma" (numeri sostituiti da `N`) e conta parole, emoj
 src/momentum_master/
   exporter/     passo 1: storico → JSONL
   classifier/   passo 1.1b: normalize.py, numbers.py  (regole: passo 3)
+  decision/     regole di entrata (range) e scelta TP/BE
+  config.py     modello e validazione del config
   analysis/     esplorazione dello storico per il catalogo dei formati
+config/       config.yaml commentato
 scripts/windows/  installazione ed export con doppio clic
 tests/
 docs/
