@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.4.0] - 2026-10-06
+### Aggiunto
+- Filtro sui mittenti autorizzati nel classificatore (D1: WDT è un gruppo).
+- `decision/entry.py`: segnale a range scartato se il prezzo di esecuzione è fuori dal range (D2).
+- `decision/targets.py`: scelta del TP configurabile (`tp_index`, default 1) e pareggio configurabile (`be_after_tp`, default spento) (D5).
+### Impatto sui follower
+Nessuno oggi: niente è collegato all'esecuzione. Quando lo sarà, i follower riceveranno solo segnali pubblicati da MOMENTUM, eseguiti solo se il prezzo è nel range, con TP1 e senza BE.
+
 ## [0.3.0] - 2026-10-06
 ### Aggiunto
 - `docs/catalogo_formati.md` v0.1 (da 8 screenshot e da un video del canale).

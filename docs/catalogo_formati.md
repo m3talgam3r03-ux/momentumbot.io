@@ -93,7 +93,14 @@ Le distanze **non sono fisse** tra un segnale e l'altro. Distanza dello SL dall'
 
 Non vengono usate come controllo automatico. Lo SL resta esattamente quello del fornitore.
 
-## Domande aperte per Lorenzo (D1-D5)
+## Risposte di Lorenzo (2026-10-06)
+- **D1** È un **gruppo**: solo i mittenti autorizzati.
+- **D2** Prezzo fuori dal range → **scarto**.
+- **D3** Consiglio richiesto: proposta in STATO_PROGETTO.md (scadenza lato broker di 90 min, IPOTESI da 2 casi del video).
+- **D4** Da chiarire (vedi STATO_PROGETTO.md).
+- **D5** Niente BE per ora; TP configurabile già nel codice.
+
+## Domande originali (D1-D5)
 - **D1** Il canale è un **gruppo** o un **canale**? Il nome "MOMENTUM" colorato sopra ogni messaggio fa pensare a un gruppo. Se è un gruppo: pubblica solo MOMENTUM, o anche altri utenti?
 - **D2** F-RANGE: quando arriva il segnale, se il prezzo è **fuori dal range**, cosa si fa? (a) si apre comunque a mercato; (b) si scarta; (c) si mette un pendente al bordo o al centro del range.
 - **D3** F-LIMIT: quanto deve durare il pendente sul master, se non arriva "LIMIT ORDER CANCELLED"? I "10 minuti" dell'ATE c'entrano?

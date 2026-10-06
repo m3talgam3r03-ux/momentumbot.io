@@ -16,7 +16,7 @@
 - Classificatore v0.1 (`classifier/classify.py`, `opening.py`, `models.py`): riconosce solo F-RANGE e F-LIMIT; tutto il resto finisce in AMBIGUOUS.
 - Test golden: 12 aperture reali riconosciute con prezzi esatti; 12 messaggi reali non di apertura, nessuno classificato come segnale.
 - L'exporter registra anche `sender_id`, necessario se WDT è un gruppo.
-- 107 test superati; ruff senza errori.
+- 131 test superati; ruff senza errori.
 - Verificato: l'integrazione Telegram di Composio è un bot (Bot API) e non può leggere lo storico di WDT. L'export si fa solo con la sessione utente (Telethon).
 
 ### Decisioni prese
@@ -31,12 +31,15 @@
 2. **NEGATIVE PROMPT**: manca in `docs/prompt-bot-momentum-fpg.md`.
 3. File di riferimento mancanti: `analisi-canali-segnali-oro.md` e `manuale-operativo-rischio-xauusd.md`. Non bloccano i passi 2-3, bloccano il 5 e il 6.
 
-### Domande aperte a Lorenzo (dal catalogo)
-- D1: gruppo o canale? Chi pubblica?
-- D2: F-RANGE con il prezzo fuori dal range: aprire, scartare o mettere un pendente?
-- D3: durata del pendente F-LIMIT sul master.
-- D4: messaggio HEADS UP: cancellare il pendente da soli o solo avvisare?
-- D5: confermare che il BE non si applica (la posizione si chiude a TP1).
+### Decisioni del 2026-10-06 (D1-D5)
+- D1 gruppo → filtro sui mittenti (`classify(..., authorized_sender_ids)`), fatto.
+- D2 fuori range → scarto (`decision/entry.py`), fatto.
+- D5 TP1 e niente BE; funzioni `tp_index` e `be_after_tp` pronte e disattivate (`decision/targets.py`), fatto.
+
+### Da confermare
+- **D3, proposta:** durata del pendente F-LIMIT **90 minuti**, impostata come scadenza **sul broker** (ORDER_TIME_SPECIFIED), così scade anche se il bot si blocca. Inoltre: cancellazione immediata a `LIMIT ORDER CANCELLED`, nessun pendente oltre il rollover giornaliero né nel fine settimana. IPOTESI: nel video due pendenti sono stati annullati dal fornitore dopo circa 90 minuti (16:15 → 17:45; ~17:47 → 19:20). Da verificare sull'export.
+- **D4:** "non cancella il precedente a meno che non sia in profit". Da chiarire cosa sia "il precedente" (il SELL aperto o il BUY pendente) e se il conto FPG sia hedging o netting.
+- Conferma che `ENTRY RANGE` = apertura a mercato.
 
 ### Rischi emersi dal video
 - Le aperture F-RANGE vengono pubblicate **due volte**: il dedup S11 è obbligatorio, non un'opzione.
