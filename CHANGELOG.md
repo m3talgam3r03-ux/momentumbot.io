@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.9.0] - 2026-10-06
+### Aggiunto
+- `listener/`: ascolto in tempo reale del gruppo (Telethon, sola lettura) in PAPER; messaggi modificati (S8), cancellati (pendente → CANCEL, mercato → notifica), arretrati registrati e mai eseguiti; latenza e heartbeat; comando `--trova-gruppo`.
+- Motore: mercato "non disponibile" (S7, prezzo non disponibile) e decisione sui messaggi cancellati.
+- Registro: cancellazioni e ultimo id elaborato.
+- Script `4_trova_id_gruppo.bat`, `5_avvia_paper.bat`.
+### Impatto sui follower
+Nessuno: in PAPER non viene inviato alcun ordine.
+
 ## [0.8.0] - 2026-10-06
 ### Aggiunto
 - `classifier/updates.py`: CANCEL (LIMIT ORDER CANCELLED), CLOSE_FULL (OUT OF TRADE, TRADE COMPLETE), MOVE_BE (istruzioni BE in italiano e inglese), risultati, pre-annunci, riepiloghi, didascalie dei grafici; le istruzioni manuali restano AMBIGUOUS.

@@ -69,6 +69,8 @@
 ### Fatto il 2026-10-06 (sera)
 - Aggiornamenti implementati: CANCEL, CLOSE_FULL, MOVE_BE, risultati, pre-annunci, riepiloghi, didascalie, HEADS UP. Collegamento risposta → segnale, anche attraverso i doppioni. Verifica end-to-end su tutto lo storico.
 
+- Listener in tempo reale (PAPER): nuovi/modificati/cancellati, arretrati registrati e mai eseguiti, latenza, heartbeat, riconnessione. Script `4_trova_id_gruppo.bat` e `5_avvia_paper.bat`. **Per avviarlo serve Lorenzo**: id del gruppo nel config + `.env` con le chiavi API sul PC/VPS.
+
 ### Prossimo passo tecnico (Claude)
 Listener in sola lettura sul gruppo (Telethon, PAPER): eventi nuovi e modificati, riconnessione, avvio a freddo che registra senza eseguire. Per il prezzo in PAPER serve una fonte: MT5 (conto demo FPG) oppure solo registrazione senza prezzo.
 

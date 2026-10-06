@@ -84,6 +84,20 @@ Per ogni messaggio: **classifica → decide → registra** (`pipeline.process_me
   python -m momentum_master.store data/momentum.sqlite <msg_id>
   ```
 
+## PAPER in tempo reale (listener)
+
+1. Trova l'id del gruppo: doppio clic su `scripts\windows\4_trova_id_gruppo.bat` (oppure `python -m momentum_master.listener --trova-gruppo MOMENTUM`) e mettilo in `config/config.yaml` → `telegram.group_id`.
+2. Avvia: doppio clic su `scripts\windows\5_avvia_paper.bat` (oppure `python -m momentum_master.listener`).
+
+Il listener legge **solo** il gruppo configurato, in sola lettura:
+- nuovi messaggi → classifica → collega → decide → registra in `data/momentum.sqlite`;
+- messaggi modificati → registrati, non aprono mai (S8);
+- messaggi cancellati → pendente collegato: CANCEL; posizione a mercato: notifica;
+- all'avvio, i messaggi arrivati mentre era spento vengono registrati e **mai** eseguiti;
+- heartbeat nel log ogni 15 minuti, con la latenza.
+
+Senza una fonte di prezzi (MT5 non ancora collegato), le aperture vengono registrate con il motivo S7 "prezzo non disponibile". In PAPER non parte comunque nessun ordine.
+
 ## Esplorazione dello storico (supporto al passo 2)
 
 ```bash
@@ -98,6 +112,7 @@ src/momentum_master/
   exporter/     passo 1: storico → JSONL
   classifier/   passo 1.1b: normalize.py, numbers.py  (regole: passo 3)
   decision/     motore decisionale, regole di entrata (range), scelta TP/BE
+  listener/     ascolto del gruppo in tempo reale (core testabile + Telethon)
   store.py      registro SQLite + comando "spiega"
   pipeline.py   classifica → decide → registra
   config.py     modello e validazione del config
