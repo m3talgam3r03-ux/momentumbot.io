@@ -67,6 +67,16 @@ python -m momentum_master.config config/config.yaml
 - Gli orari vanno sempre tra virgolette (`"23:50"`).
 - Nessun segreto nel config: i segreti vanno solo nel `.env`.
 
+## Decisioni e registro (PAPER)
+
+Per ogni messaggio: **classifica → decide → registra** (`pipeline.process_message`).
+- Il motore decisionale (`decision/engine.py`) è una funzione pura: prima le regole di sicurezza S1-S11, poi i filtri F del config. Ogni scarto ha il suo codice (S5, F5…).
+- Il registro (`data/momentum.sqlite`) conserva testo originale, categoria, decisione, motivo, prezzi e versione del config.
+- Per ricostruire una decisione:
+  ```bash
+  python -m momentum_master.store data/momentum.sqlite <msg_id>
+  ```
+
 ## Esplorazione dello storico (supporto al passo 2)
 
 ```bash
@@ -80,7 +90,9 @@ Raggruppa i messaggi per "forma" (numeri sostituiti da `N`) e conta parole, emoj
 src/momentum_master/
   exporter/     passo 1: storico → JSONL
   classifier/   passo 1.1b: normalize.py, numbers.py  (regole: passo 3)
-  decision/     regole di entrata (range) e scelta TP/BE
+  decision/     motore decisionale, regole di entrata (range), scelta TP/BE
+  store.py      registro SQLite + comando "spiega"
+  pipeline.py   classifica → decide → registra
   config.py     modello e validazione del config
   analysis/     esplorazione dello storico per il catalogo dei formati
 config/       config.yaml commentato

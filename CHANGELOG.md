@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.6.0] - 2026-10-06
+### Aggiunto
+- `decision/engine.py`: motore decisionale puro (S1-S11 + filtri F), un test per ogni reason_code.
+- `store.py`: registro SQLite (WAL, idempotente) e comando per ricostruire una decisione.
+- `pipeline.py`: classifica → decide → registra.
+- Dipendenza `tzdata==2026.5` (fusi orari su Windows).
+### Impatto sui follower
+Nessuno: nessun ordine viene inviato. Quando il bot sarà attivo, ogni segnale pubblicato due volte verrà aperto una sola volta (S11).
+
 ## [0.5.0] - 2026-10-06
 ### Aggiunto
 - `config/config.yaml` (v0.1.0, commentato) e `config.py` (modello pydantic + `python -m momentum_master.config`).

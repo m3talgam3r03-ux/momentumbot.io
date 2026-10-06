@@ -2,7 +2,8 @@
 
 ## 2026-10-06
 
-**Fase corrente:** passo 1 completato lato codice (export reale da eseguire). Passi 2 e 3 **avviati in anticipo** sui messaggi di apertura, grazie a 8 screenshot e a un video del canale forniti da Lorenzo.
+**Fase corrente:** passo 4 (linker + decision_engine in PAPER) avviato: motore decisionale e registro pronti, collegamento al gruppo in tempo reale da fare.
+**Fase precedente:** passo 1 completato lato codice (export reale da eseguire). Passi 2 e 3 **avviati in anticipo** sui messaggi di apertura, grazie a 8 screenshot e a un video del canale forniti da Lorenzo.
 **Modalità del bot:** nessuna. Non esiste ancora né classificatore né esecuzione: niente PAPER, DEMO o LIVE.
 
 ### Completato
@@ -18,7 +19,10 @@
 - L'exporter registra anche `sender_id`, necessario se WDT è un gruppo.
 - `config/config.yaml` v0.1.0 + `config.py`: config validato. Il bot non parte con un config errato; DEMO e LIVE sono bloccati senza filtri confermati e dati FPG; chiavi sconosciute rifiutate; orari senza virgolette rifiutati (YAML li leggerebbe come numeri).
 - Email a FPG preparata (8 domande): in attesa dell'invio da parte di Lorenzo.
-- 154 test superati; ruff senza errori.
+- Motore decisionale (`decision/engine.py`): S1-S11 + filtri F in ordine, un test per ogni reason_code. Pendenti con scadenza sul broker, ridotta prima del rollover.
+- Registro SQLite (`store.py`) + `pipeline.py` + comando "spiega" (`python -m momentum_master.store`): ogni decisione ricostruibile.
+- S11 corretto in fase di sviluppo: il doppione si confronta con qualsiasi segnale già visto, anche scartato (altrimenti la seconda copia di un segnale scartato poteva essere aperta).
+- 214 test superati; ruff senza errori.
 - Verificato: l'integrazione Telegram di Composio è un bot (Bot API) e non può leggere lo storico di WDT. L'export si fa solo con la sessione utente (Telethon).
 
 ### Decisioni prese
@@ -53,6 +57,9 @@
 - Filtri F1-F13: da compilare dopo l'osservazione del canale.
 - S9: minuti di blackout del venerdì e dell'apertura settimanale.
 - IPOTESI da verificare: il fuso del server FPG (GMT+2/+3).
+
+### Prossimo passo tecnico (Claude)
+Listener in sola lettura sul gruppo (Telethon, PAPER): eventi nuovi e modificati, riconnessione, avvio a freddo che registra senza eseguire. Per il prezzo in PAPER serve una fonte: MT5 (conto demo FPG) oppure solo registrazione senza prezzo.
 
 ### Prossimo passo
 Lorenzo esegue `scripts\windows\1_installa.bat`, poi `2_esporta_prova.bat` e `3_esporta_tutto.bat`, e manda `storico.jsonl`, `storico.summary.json` ed `esplorazione.md`.
