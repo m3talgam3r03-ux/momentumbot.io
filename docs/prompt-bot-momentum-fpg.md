@@ -3,7 +3,7 @@
 > **Versione:** 2026-10-06 · v1 (MASTER PROMPT fornito da Lorenzo in chat il 2026-10-06, riportato integralmente qui sotto)
 >
 > **Sezioni ancora mancanti in questo file:**
-> - **NEGATIVE PROMPT**: non ancora fornito. Finché manca, valgono solo i divieti scritti nel master prompt.
+> - **NEGATIVE PROMPT**: ora in `docs/NEGATIVE_PROMPT.md` (2026-10-07, da approvare).
 > - **Filtri di Lorenzo (F1–F13)**: da compilare. Senza filtri confermati il bot resta in PAPER.
 > - **S9**: minuti prima della chiusura del venerdì e dopo l'apertura settimanale da definire.
 > - **Punti aperti con FPG**: copia dei pendenti, replica di modifiche e chiusure parziali, lotti follower < 0,01, ritardo di copia.

@@ -40,7 +40,7 @@
 
 **Prima della DEMO**
 9. Risposte di FPG (email pronta): hedging/netting, copia di pendenti/modifiche/cancellazioni, lotti < 0,01, ritardo, simbolo e fuso del server.
-10. NEGATIVE PROMPT (oppure "fallo tu"); file `analisi-canali-segnali-oro.md` e `manuale-operativo-rischio-xauusd.md`.
+10. Approvare `docs/MASTER_PROMPT_v2.md` e `docs/NEGATIVE_PROMPT.md` (scritti da Claude il 2026-10-07); file `analisi-canali-segnali-oro.md` e `manuale-operativo-rischio-xauusd.md`.
 11. Capitale del conto master (per il lotto, oggi un segnaposto da 0,01).
 12. Parere legale sul servizio di copia verso terzi.
 13. PR su GitHub: modalità "Accept edits" + "procedi con B".
