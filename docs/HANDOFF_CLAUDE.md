@@ -39,7 +39,7 @@ Priorità, nell'ordine: 1) non aprire mai un'operazione sbagliata; 2) non perder
 - Chiavi API Telegram + id del gruppo → PAPER dal vivo (`scripts/windows/4_…` e `5_…`).
 - MT5 di FPG (anche DEMO) → export dei prezzi e replay (`6_…`, `7_…`).
 - Decisioni: limite di operazioni al giorno (il fornitore arriva a 17 al giorno, provvisorio 10), D3 (pendenti 90 min), casi 917/1128/922, "ENTRY RANGE = mercato".
-- Risposte di FPG (hedging/netting, copia di pendenti/modifiche/cancellazioni, lotti < 0,01, simbolo, fuso del server), NEGATIVE PROMPT, capitale del master, parere legale.
+- Risposte di FPG (hedging/netting, copia di pendenti/modifiche/cancellazioni, lotti < 0,01, simbolo, fuso del server), approvazione del master prompt v2, capitale del master, parere legale.
 
 ## Prossimi passi tecnici
 1. Notifiche Telegram (gruppo follower + canale admin) e comandi admin (servono token e id delle chat).
