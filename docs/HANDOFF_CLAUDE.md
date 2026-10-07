@@ -8,7 +8,7 @@ Priorità, nell'ordine: 1) non aprire mai un'operazione sbagliata; 2) non perder
 
 ## Leggi prima di tutto (in quest'ordine)
 1. `STATO_PROGETTO.md` — fotografia attuale: cosa è fatto, cosa serve a Lorenzo, prossimi passi.
-2. `docs/MASTER_PROMPT_v2.md` e `docs/NEGATIVE_PROMPT.md` — regole del progetto (v2 + 38 divieti).
+2. `docs/MASTER_PROMPT_v2.md` — regole del progetto (versione aggiornata, documento unico).
 3. `docs/prompt-bot-momentum-fpg.md` — master prompt v1 originale + registro delle decisioni di Lorenzo.
 4. `docs/catalogo_formati.md` — formati reali dei messaggi (verificati su 1976 messaggi).
 5. `docs/analisi_storico_2026-10-06.md` — risultati del classificatore sullo storico ed esiti dichiarati dal fornitore.
